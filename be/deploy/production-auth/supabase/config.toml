@@ -1,0 +1,12 @@
+# Only these Auth properties are deployed. Local Supabase settings stay in be/supabase/config.toml.
+project_id = "couple-production-auth"
+
+[auth]
+site_url = "https://couple-three-pi.vercel.app"
+additional_redirect_urls = [
+  "https://couple-three-pi.vercel.app/auth/callback",
+  "https://couple-three-pi.vercel.app/auth/callback?**",
+]
+
+[auth.email]
+enable_confirmations = true

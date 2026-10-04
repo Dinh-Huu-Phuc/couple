@@ -1,8 +1,36 @@
 # Email gửi từ COUPLE
 
-Hiện trạng ngày 03/10/2026: người dùng chưa có domain; `couple@mail.hoang.io` là ví dụ.
-Thư xác nhận và reset vẫn do SMTP mặc định của Supabase gửi. Các mẫu trong thư mục này
-là bản chuẩn bị, chưa được áp dụng lên hosted Auth hoặc cấu hình local đang chạy.
+Website Production hiện dùng `https://couple-three-pi.vercel.app`. Đây là subdomain
+Vercel cấp cho web, không phải domain gửi mail mà mình sở hữu DNS. Thư xác nhận
+và reset vẫn do SMTP mặc định của Supabase gửi. Mẫu tiếng Việt trong thư mục này
+đã chuẩn bị nhưng chưa thể áp dụng lên hosted Auth: Supabase Free từ chối chỉnh
+template khi dùng dịch vụ email mặc định và yêu cầu Custom SMTP.
+`couple@mail.hoang.io` là ví dụ, chưa phải địa chỉ From thực tế.
+
+## Redirect xác minh trên Production
+
+Hosted Supabase Auth Site URL phải là `https://couple-three-pi.vercel.app`, và
+redirect allowlist phải chứa `/auth/callback` cùng các URL callback có query `next`.
+Manifest Production chỉ khai báo Site URL, allowlist và yêu cầu xác minh email;
+cấu hình
+`be/supabase/config.toml` vẫn phục vụ local. Để kiểm tra và áp dụng cấu hình:
+
+```powershell
+cd be
+node email/prepare-deploy.mjs
+corepack pnpm exec supabase config diff --workdir md/production-auth-deploy --project-ref ldxekwjpzxsnhhcvvlfi
+corepack pnpm exec supabase config push --workdir md/production-auth-deploy --project-ref ldxekwjpzxsnhhcvvlfi
+```
+
+Thư mục `be/md/production-auth-deploy` là bản sao sinh ra từ các file Git; không
+chứa `.env`. Kiểm tra diff trước khi push để không thay đổi các cấu hình Auth
+khác. Mẫu sẽ dùng `{{ .ConfirmationURL }}` để token được Supabase xác minh trước khi
+điều hướng về callback của COUPLE. User phải xác minh email trước khi đăng nhập;
+localhost và web deploy trỏ cùng một Supabase Auth, nên sau khi xác minh một lần
+thì tài khoản có thể đăng nhập từ cả hai địa chỉ. Đây là trạng thái tài khoản
+chung, không phải một phiên đăng nhập vượt qua bước xác minh.
+Thư đã gửi trước khi đổi Site URL vẫn chứa link cũ; người dùng cần yêu cầu gửi
+lại từ domain Production hoặc đăng ký bằng tài khoản thử mới.
 
 ## Kết quả cần đạt
 
@@ -33,10 +61,10 @@ là bản chuẩn bị, chưa được áp dụng lên hosted Auth hoặc cấu 
 
    Provider SMTP khác dùng thông số của provider đó. Credential nằm trong cấu hình
    Auth server, không ở `NEXT_PUBLIC_*`, frontend hoặc source control.
-4. Kiểm tra lại Site URL và redirect allowlist: hiện dùng localhost/127.0.0.1 cổng
-   3001 để phát triển; lúc deploy thay bằng domain HTTPS của web. Domain của web
-   có thể khác domain gửi mail. Link localhost chỉ mở được trên máy đang chạy web.
-5. Trong Email Templates, dùng các file sau cho từng loại thư:
+4. Khi đổi sang domain web do mình sở hữu, cập nhật Site URL và redirect allowlist
+   sang domain HTTPS đó. Domain web có thể khác domain gửi mail. Chỉ dùng địa chỉ
+   From thuộc domain mình có quyền quản lý DNS.
+5. Sau khi bật Custom SMTP, trong Email Templates dùng các file sau cho từng loại thư:
 
    | Loại | Subject | Nội dung |
    | --- | --- | --- |
@@ -51,11 +79,13 @@ là bản chuẩn bị, chưa được áp dụng lên hosted Auth hoặc cấu 
    người dùng chỉ định. Đăng ký và reset phải hoạt động trước khi mở đăng ký rộng rãi.
    Không tự gửi mail thật tới người dùng hiện hữu.
 
-## Điều chưa thực hiện
+## Điều chưa thực hiện cho địa chỉ From riêng
 
-- Chưa chọn/mua hoặc xác minh domain.
-- Chưa có SMTP credentials; chưa bật Custom SMTP trên project.
-- Chưa áp dụng templates hoặc gửi thử thư thật qua provider.
+- Chưa chọn/mua hoặc xác minh domain gửi mail có quyền quản lý DNS. Subdomain
+  `vercel.app` không cấp cho project quyền tự đặt SPF/DKIM để gửi email từ đó.
+- Chưa có SMTP credentials; chưa bật Custom SMTP trên project. Vì thế mẫu
+  COUPLE chưa thể áp dụng cho thư thật.
+- Chưa gửi thử thư thật qua Custom SMTP provider.
 - Chưa cấu hình receiving nếu muốn người dùng trả lời về địa chỉ From.
 
 Nguồn chính thức:
