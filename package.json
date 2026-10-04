@@ -1,0 +1,15 @@
+{
+  "name": "couple",
+  "private": true,
+  "packageManager": "pnpm@12.8.1",
+  "scripts": {
+    "dev:web": "corepack pnpm --dir fe dev:web",
+    "build:web": "corepack pnpm --dir fe build:web",
+    "start:web": "corepack pnpm --dir fe start:web",
+    "typecheck": "corepack pnpm --dir fe typecheck",
+    "lint": "corepack pnpm --dir fe lint",
+    "test": "corepack pnpm --dir fe test",
+    "test:e2e": "corepack pnpm --dir fe test:e2e",
+    "test:db": "corepack pnpm --dir be test:db"
+  }
+}

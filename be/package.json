@@ -1,0 +1,25 @@
+{
+  "name": "@couple/backend",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "supabase": "supabase",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:status": "supabase status",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "test:db": "supabase test db",
+    "test:db:remote": "supabase test db --linked --agent no --output-format text",
+    "db:lint": "supabase db lint --linked --level warning",
+    "db:link": "supabase link --project-ref ldxekwjpzxsnhhcvvlfi",
+    "db:push": "supabase db push"
+  },
+  "devDependencies": {
+    "supabase": "2.119.0"
+  }
+}

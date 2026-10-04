@@ -1,0 +1,23 @@
+{
+  "name": "@couple/frontend",
+  "private": true,
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "dev:web": "corepack pnpm --filter @couple/web dev",
+    "build:web": "corepack pnpm --filter @couple/web build",
+    "start:web": "corepack pnpm --filter @couple/web start",
+    "typecheck": "corepack pnpm --filter @couple/web typecheck",
+    "lint": "corepack pnpm --filter @couple/web lint",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "dotenv": "^17.0.0",
+    "prettier": "^3.9.9",
+    "vitest": "^4.0.0"
+  }
+}

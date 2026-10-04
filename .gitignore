@@ -1,0 +1,39 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+**/node_modules/
+**/docs/
+**/md/
+# Generated agent notes and other Markdown documents stay out of Git.
+*.md
+!README.md
+dist/
+coverage/
+.next/
+.next-e2e/
+.next-build-check/
+*.tsbuildinfo
+playwright-report/
+test-results/
+.env.e2e
+
+**/fe/tests/
+**/fe/test-results/
+
+# Supabase local state
+be/supabase/.branches/
+be/supabase/.temp/
+**/supabase/.temp/
+**/supabase/.branches/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Private admin interface requested by the project owner
+/fe/apps/web/src/admin/

@@ -1,0 +1,11 @@
+packages:
+  - apps/web
+  - packages/*
+allowBuilds:
+  unrs-resolver: true
+  sharp: true
+  esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@tanstack/query-core@5.104.1'
+  - '@tanstack/react-query@5.104.1'

@@ -1,0 +1,3 @@
+-- Intentionally empty.
+-- Test identities and relationship data are created by pgTAP fixtures so that
+-- local development never depends on committed credentials or auth tokens.

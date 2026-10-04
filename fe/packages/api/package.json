@@ -1,0 +1,13 @@
+{
+  "name": "@couple/api",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@couple/domain": "workspace:*",
+    "@supabase/supabase-js": "2.117.2",
+    "zod": "4.6.5"
+  }
+}

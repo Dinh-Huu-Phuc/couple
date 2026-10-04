@@ -1,0 +1,6 @@
+project_id = "couple-web-auth"
+
+# This file changes only the development web URLs. Review `config diff` before pushing.
+[auth]
+site_url = "http://localhost:3001"
+additional_redirect_urls = ["http://localhost:3000/**", "http://127.0.0.1:3000/**", "http://localhost:3001/**", "http://127.0.0.1:3001/**"]
