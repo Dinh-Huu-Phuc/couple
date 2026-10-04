@@ -7,8 +7,15 @@ import { fileURLToPath } from "node:url";
 const backend = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const target = resolve(backend, "md/production-auth-deploy");
 mkdirSync(resolve(target, "supabase"), { recursive: true });
+mkdirSync(resolve(target, "supabase/templates"), { recursive: true });
 copyFileSync(
   resolve(backend, "deploy/production-auth/supabase/config.toml"),
   resolve(target, "supabase/config.toml"),
 );
+for (const name of ["confirmation", "recovery"]) {
+  copyFileSync(
+    resolve(backend, `email/templates/${name}.html`),
+    resolve(target, `supabase/templates/${name}.html`),
+  );
+}
 console.log("Prepared production Auth configuration in be/md/production-auth-deploy");

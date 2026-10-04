@@ -2,11 +2,21 @@
 project_id = "couple-production-auth"
 
 [auth]
-site_url = "https://couple-three-pi.vercel.app"
+site_url = "https://www.coupleletters.app"
 additional_redirect_urls = [
   "https://couple-three-pi.vercel.app/auth/callback",
   "https://couple-three-pi.vercel.app/auth/callback?**",
+  "https://www.coupleletters.app/auth/callback",
+  "https://www.coupleletters.app/auth/callback?**",
 ]
 
 [auth.email]
 enable_confirmations = true
+
+[auth.email.template.confirmation]
+subject = "COUPLE — Xác nhận email của cậu"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "COUPLE — Đặt lại mật khẩu"
+content_path = "./supabase/templates/recovery.html"
