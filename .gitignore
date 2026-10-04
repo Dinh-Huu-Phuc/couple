@@ -35,5 +35,6 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Private admin interface requested by the project owner
-/fe/apps/web/src/admin/
+# Admin source is versioned; its credentials and archived data stay private.
+# Temporary verification checkout, generated from Git-tracked source only.
+/.deploy-check/

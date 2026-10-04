@@ -52,5 +52,12 @@ Always run `db:reset` and `test:db` locally before pushing a new migration. Neve
 - `email/`: Vietnamese confirmation/reset templates and custom SMTP setup guide
 
 Account/history deletion and the separate private admin interface are documented in
-[deletion-admin.md](md/deletion-admin.md). Admin source is intentionally ignored by Git;
-provide `fe/apps/web/src/admin/` separately when building a fresh checkout.
+[deletion-admin.md](md/deletion-admin.md). Admin application source is tracked in Git;
+credentials and archives remain outside Git. Vercel uses the server-only variables
+`ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `ADMIN_BACKEND_SERVICE_ROLE_KEY` rather than local env files.
+
+For Vercel, use `fe/apps/web` as the Root Directory and enable **Include source
+files outside of the Root Directory in the Build Step** for the shared packages
+and `be/admin` modules. Configure the public Supabase variables from the web's
+`.env.example` and the three server-only admin variables above, then redeploy.
+Never prefix admin credentials or the service role key with `NEXT_PUBLIC_`.

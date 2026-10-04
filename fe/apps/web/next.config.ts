@@ -4,6 +4,10 @@ const config: NextConfig = {
   distDir: process.env.COUPLE_WEB_DIST_DIR || ".next",
   transpilePackages: ["@couple/domain", "@couple/api", "@couple/theme"],
   turbopack: { root: path.resolve(__dirname, "../../..") },
+  outputFileTracingRoot: path.resolve(__dirname, "../../.."),
+  outputFileTracingExcludes: {
+    "/*": ["../../../be/.env*", "../../../be/md/**/*"],
+  },
   async headers() {
     return [
       {
