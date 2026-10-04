@@ -251,6 +251,8 @@ export const errorMessages: Record<string, string> = {
     "Phiên quản trị đã hết hạn. Cậu đăng nhập admin lại nhé.",
   ADMIN_UNAVAILABLE: "Chưa kết nối được khu vực quản trị. Cậu thử lại nhé.",
   REAUTH_REQUIRED: "Mật khẩu chưa đúng. Cậu xác nhận lại trước khi xoá nhé.",
+  DELETION_CONNECTION_FAILED:
+    "Chưa kết nối được hệ thống xoá tài khoản. Cậu có thể thử lại; nếu yêu cầu trước đã bắt đầu, hệ thống sẽ tiếp tục từ bước đã lưu.",
   DELETION_RETRY_REQUIRED:
     "Việc lưu dữ liệu và xoá tài khoản chưa hoàn tất. Cậu bấm thử lại để tiếp tục; dữ liệu đã lưu sẽ được giữ.",
   UNAUTHENTICATED: "Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.",

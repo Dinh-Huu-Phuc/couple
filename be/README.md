@@ -61,3 +61,16 @@ files outside of the Root Directory in the Build Step** for the shared packages
 and `be/admin` modules. Configure the public Supabase variables from the web's
 `.env.example` and the three server-only admin variables above, then redeploy.
 Never prefix admin credentials or the service role key with `NEXT_PUBLIC_`.
+
+The hosted `delete-account` Edge Function allows only named web origins. After
+deploying the web to a new domain, set `COUPLE_WEB_ORIGINS` on the **Supabase**
+project to the exact HTTPS origin (no path or trailing slash). The production
+origin is currently `https://couple-three-pi.vercel.app`. From `be/`:
+
+```powershell
+corepack pnpm exec supabase secrets set COUPLE_WEB_ORIGINS=https://couple-three-pi.vercel.app --project-ref ldxekwjpzxsnhhcvvlfi
+```
+
+This setting controls browser CORS for account deletion. The function separately
+requires a valid user JWT, current password, and confirmation phrase; the CORS
+setting does not grant account-deletion permission.

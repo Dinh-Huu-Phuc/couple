@@ -31,7 +31,15 @@ export function SettingsPage() {
         body: { confirmation: deletePhrase, email: deleteEmail, password },
       });
       if (result.error || result.data?.ok !== true) {
-        let code = result.data?.error?.code ?? "DELETION_RETRY_REQUIRED";
+        let code =
+          result.data?.error?.code ??
+          (result.error &&
+          !(
+            "context" in result.error &&
+            result.error.context instanceof Response
+          )
+            ? "DELETION_CONNECTION_FAILED"
+            : "DELETION_RETRY_REQUIRED");
         if (
           result.error &&
           "context" in result.error &&
