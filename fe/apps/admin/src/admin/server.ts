@@ -10,14 +10,22 @@ import {
   newToken,
   SESSION_SECONDS,
 } from "../../../../../be/admin/auth.mjs";
-import { supabaseConfig } from "@/lib/supabase/config";
-import { requestOrigin } from "@/lib/request-origin";
 import { readBoundedJson } from "../../../../../be/admin/read-json.mjs";
 
 const COOKIE = "couple-admin-session";
+function requestOrigin(request: NextRequest) {
+  const host = process.env.ADMIN_HOST;
+  if (process.env.NODE_ENV === "production") {
+    if (!host) throw new Error("Missing admin host.");
+    return `https://${host}`;
+  }
+  return request.nextUrl.origin;
+}
 function backend() {
   const config = adminConfig();
-  const client = createClient(supabaseConfig().url, config.serviceKey, {
+  const url = process.env.SUPABASE_URL;
+  if (!url) throw new Error("Missing server-side Supabase URL.");
+  const client = createClient(url, config.serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return { config, client };
@@ -81,7 +89,7 @@ export async function adminHandler(request: NextRequest, action: string) {
         httpOnly: true,
         sameSite: "strict",
         secure: requestOrigin(request).startsWith("https://"),
-        path: "/admin",
+        path: "/",
         maxAge: SESSION_SECONDS,
       });
       return response;
@@ -99,7 +107,7 @@ export async function adminHandler(request: NextRequest, action: string) {
         httpOnly: true,
         sameSite: "strict",
         secure: requestOrigin(request).startsWith("https://"),
-        path: "/admin",
+        path: "/",
         maxAge: 0,
       });
       return response;

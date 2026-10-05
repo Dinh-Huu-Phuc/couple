@@ -67,7 +67,7 @@ export function AdminLogin() {
             Vào trang quản trị
           </Button>
         </form>
-        <a href="/login" className="text-button">
+        <a href="https://www.coupleletters.app/login" className="text-button">
           Về COUPLE
         </a>
       </section>

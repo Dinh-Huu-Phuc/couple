@@ -26,10 +26,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         router.refresh();
       }
       actor = next;
-      if (
-        event === "SIGNED_OUT" &&
-        !/^\/admin(?:\/|$)/.test(window.location.pathname)
-      ) {
+      if (event === "SIGNED_OUT") {
         void queryClient.cancelQueries();
         queryClient.clear();
         router.replace("/login");

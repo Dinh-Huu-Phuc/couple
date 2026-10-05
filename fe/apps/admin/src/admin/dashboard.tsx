@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { z } from "zod";
 import { dateLabel } from "@couple/domain";
 import { adminRequest } from "./client";
@@ -48,12 +49,12 @@ function ArchivePhoto({
   useEffect(() => {
     let alive = true;
     let objectUrl: string | undefined;
-    void fetch(`/admin/api/photo?id=${id}&index=${index}`, {
+    void fetch(`/api/photo?id=${id}&index=${index}`, {
       credentials: "same-origin",
       cache: "no-store",
     })
       .then(async (response) => {
-        if (response.status === 401) window.location.replace("/admin");
+        if (response.status === 401) window.location.replace("/");
         if (!response.ok) throw new Error("Không thể tải ảnh đã lưu.");
         return response.blob();
       })
@@ -220,9 +221,9 @@ export function AdminDashboard() {
   return (
     <main className={styles.shell}>
       <header className={styles.top}>
-        <a className="wordmark" href="/admin">
+        <Link className="wordmark" href="/">
           COUPLE · ADMIN
-        </a>
+        </Link>
         <Button
           className="button-secondary"
           busy={loggingOut}

@@ -5,6 +5,8 @@
   "scripts": {
     "dev:web": "corepack pnpm --dir fe dev:web",
     "build:web": "corepack pnpm --dir fe build:web",
+    "build:admin": "corepack pnpm --dir fe build:admin",
+    "dev:admin": "corepack pnpm --dir fe dev:admin",
     "start:web": "corepack pnpm --dir fe start:web",
     "typecheck": "corepack pnpm --dir fe typecheck",
     "lint": "corepack pnpm --dir fe lint",

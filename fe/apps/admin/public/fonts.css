@@ -1,0 +1,6 @@
+/* Self-hosted fonts from google/fonts, licensed under SIL OFL; licenses live beside the files. */
+@font-face{font-family:"Couple Sans";src:url("/fonts/BeVietnamPro-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"Couple Sans";src:url("/fonts/BeVietnamPro-Medium.ttf") format("truetype");font-weight:500;font-display:swap}
+@font-face{font-family:"Couple Sans";src:url("/fonts/BeVietnamPro-SemiBold.ttf") format("truetype");font-weight:600;font-display:swap}
+@font-face{font-family:"Couple Serif";src:url("/fonts/Lora-Variable.ttf") format("truetype");font-weight:400 700;font-display:swap}
+@font-face{font-family:"Couple Serif";src:url("/fonts/Lora-Italic-Variable.ttf") format("truetype");font-weight:400 700;font-style:italic;font-display:swap}

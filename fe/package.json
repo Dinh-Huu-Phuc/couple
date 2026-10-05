@@ -8,7 +8,11 @@
   "scripts": {
     "dev:web": "corepack pnpm --filter @couple/web dev",
     "build:web": "corepack pnpm --filter @couple/web build",
+    "build:admin": "corepack pnpm --filter @couple/admin build",
     "start:web": "corepack pnpm --filter @couple/web start",
+    "dev:admin": "corepack pnpm --filter @couple/admin dev",
+    "typecheck:admin": "corepack pnpm --filter @couple/admin typecheck",
+    "lint:admin": "corepack pnpm --filter @couple/admin lint",
     "typecheck": "corepack pnpm --filter @couple/web typecheck",
     "lint": "corepack pnpm --filter @couple/web lint",
     "test": "vitest run",
