@@ -8,6 +8,10 @@ import { browserClient } from "@/lib/supabase/client";
 import { Button, Notice } from "@/components/ui";
 import { useQuery } from "@tanstack/react-query";
 import { inactivityPolicy } from "@/lib/inactivity";
+import {
+  SignupPolicyDialog,
+  type SignupPolicyPage,
+} from "./signup-policy-dialog";
 type Mode = "login" | "register" | "forgot" | "reset" | "verify";
 const titles = {
   login: "Chào cậu, mừng cậu về.",
@@ -30,6 +34,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [sent, setSent] = useState(false);
   const [ready, setReady] = useState(mode !== "reset");
   const [acceptedPolicy, setAcceptedPolicy] = useState<number | null>(null);
+  const [policyPage, setPolicyPage] = useState<SignupPolicyPage | null>(null);
   const policy = useQuery({
     queryKey: ["inactivity-policy"],
     queryFn: inactivityPolicy,
@@ -170,7 +175,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
           Về đăng nhập
           <ArrowRight size={18} />
         </Link>
-        <Link href={`${authLink("/verify-email")}&email=${encodeURIComponent(email.trim())}`} className="text-button">
+        <Link
+          href={`${authLink("/verify-email")}&email=${encodeURIComponent(email.trim())}`}
+          className="text-button"
+        >
           Gửi lại email xác nhận
         </Link>
       </section>
@@ -259,11 +267,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
           <>
             <Notice error={policy.error} retry={() => void policy.refetch()} />
             {policy.data && (
-              <label style={{ display: "flex", alignItems: "start", gap: 10 }}>
+              <div className="signup-consent">
                 <input
                   type="checkbox"
                   required
-                  style={{ width: "auto" }}
+                  aria-label="Tôi đồng ý với Điều khoản sử dụng và đã đọc Chính sách quyền riêng tư"
                   checked={acceptedPolicy === policy.data.version}
                   onChange={(e) =>
                     setAcceptedPolicy(
@@ -272,12 +280,20 @@ export function AuthForm({ mode }: { mode: Mode }) {
                   }
                 />
                 <span>
-                  Tôi chấp nhận việc tự động xoá tài khoản sau{" "}
-                  {policy.data.days} ngày liên tiếp không sử dụng app. Nội dung
-                  riêng và kỷ niệm chung liên quan cũng bị xoá, kể cả kỷ niệm do
-                  người ấy tạo; mong muốn riêng của người ấy được giữ.
+                  Tôi đồng ý với{" "}
+                  <button type="button" onClick={() => setPolicyPage("terms")}>
+                    Điều khoản sử dụng
+                  </button>{" "}
+                  và đã đọc{" "}
+                  <button
+                    type="button"
+                    onClick={() => setPolicyPage("privacy")}
+                  >
+                    Chính sách quyền riêng tư
+                  </button>
+                  .
                 </span>
-              </label>
+              </div>
             )}
           </>
         )}
@@ -303,6 +319,13 @@ export function AuthForm({ mode }: { mode: Mode }) {
           <ArrowRight size={18} />
         </Button>
       </form>
+      {policyPage && policy.data && (
+        <SignupPolicyDialog
+          page={policyPage}
+          inactivityDays={policy.data.days}
+          close={() => setPolicyPage(null)}
+        />
+      )}
       {process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true" &&
         ["login", "register"].includes(mode) && (
           <>
@@ -312,6 +335,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
             <Button
               className="button-secondary full"
               busy={busy}
+              disabled={
+                mode === "register" &&
+                (!policy.data || acceptedPolicy !== policy.data.version)
+              }
               onClick={google}
             >
               Tiếp tục với Google
