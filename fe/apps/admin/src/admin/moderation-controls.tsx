@@ -41,14 +41,14 @@ export function ModerationControls({ id, email, banned, pending }: {
           <textarea value={note} minLength={10} maxLength={500} onChange={(event) => setNote(event.target.value)} />
         </label>
       </>}
-      {operation === "delete" && <label>Nhập “XÓA TÀI KHOẢN” để xác nhận
+      {operation === "delete" && <label>Nhập “XOÁ TÀI KHOẢN” để xác nhận
         <input value={confirmation} autoComplete="off" onChange={(event) => setConfirmation(event.target.value)} />
       </label>}
       <Notice error={error} />
       <div className="button-row">
         <Button className="button-secondary" disabled={busy} onClick={close}>Huỷ</Button>
         <Button className={operation === "delete" ? "button-danger" : "button-secondary"} busy={busy}
-          disabled={operation !== "unban" && (note.trim().length < 10 || note.trim().length > 500) || operation === "delete" && confirmation !== "XÓA TÀI KHOẢN"}
+          disabled={operation !== "unban" && (note.trim().length < 10 || note.trim().length > 500) || operation === "delete" && confirmation !== "XOÁ TÀI KHOẢN"}
           onClick={async () => {
             setBusy(true); setError(undefined);
             try {

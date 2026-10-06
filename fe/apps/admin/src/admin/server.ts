@@ -175,12 +175,12 @@ export async function adminHandler(request: NextRequest, action: string) {
         operation: z.enum(["ban", "unban", "delete"]),
         reason: z.enum(["spam", "harassment", "abuse", "other"]).optional(),
         note: z.string().trim().min(10).max(500).optional(),
-        confirmation: z.literal("XÓA TÀI KHOẢN").optional(),
+        confirmation: z.literal("XOÁ TÀI KHOẢN").optional(),
       }).safeParse(await readBoundedJson(request));
       if (!body.success) return reply(400, "VALIDATION_ERROR");
       const { id, operation, reason, note, confirmation } = body.data;
       if (operation !== "unban" && (!reason || !note)) return reply(400, "VALIDATION_ERROR");
-      if (operation === "delete" && confirmation !== "XÓA TÀI KHOẢN") return reply(400, "VALIDATION_ERROR");
+      if (operation === "delete" && confirmation !== "XOÁ TÀI KHOẢN") return reply(400, "VALIDATION_ERROR");
       if (operation === "delete") {
         const port = inactivityErasurePort(client);
         const erased = await eraseAccount({ ...port, prepare: async (userId) => {
