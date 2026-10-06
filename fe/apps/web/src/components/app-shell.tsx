@@ -25,6 +25,7 @@ import { AppError, initials, safeNext, type Context } from "@couple/domain";
 import { browserClient } from "@/lib/supabase/client";
 import { Loading, Notice } from "./ui";
 import { appName } from "@couple/theme";
+import { inactivityStatus } from "@/lib/inactivity";
 const client = () => browserClient();
 type AppValue = {
   context: Context;
@@ -66,6 +67,43 @@ export function AppShell({
     refetchIntervalInBackground: false,
   });
   const ctx = query.data;
+  const trackActivity = Boolean(ctx && !ctx.deletionPending);
+  const inactivity = useQuery({
+    queryKey: [userId, "inactivity"],
+    queryFn: inactivityStatus,
+    enabled: !!ctx && !ctx.deletionPending,
+    refetchOnWindowFocus: true,
+  });
+  useEffect(() => {
+    if (!trackActivity) return;
+    let interactedAt = Date.now();
+    const interact = () => {
+      interactedAt = Date.now();
+    };
+    const touch = () => {
+      if (
+        document.visibilityState === "visible" &&
+        navigator.onLine &&
+        Date.now() - interactedAt < 10 * 60_000
+      )
+        void client().schema("api").rpc("touch_account_activity");
+    };
+    touch();
+    const interval = window.setInterval(touch, 60_000);
+    document.addEventListener("visibilitychange", touch);
+    window.addEventListener("online", touch);
+    window.addEventListener("pointerdown", interact);
+    window.addEventListener("keydown", interact);
+    window.addEventListener("scroll", interact, true);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", touch);
+      window.removeEventListener("online", touch);
+      window.removeEventListener("pointerdown", interact);
+      window.removeEventListener("keydown", interact);
+      window.removeEventListener("scroll", interact, true);
+    };
+  }, [userId, trackActivity]);
   const coupleId = ctx?.couple?.id;
   useEffect(() => {
     if (
@@ -236,6 +274,15 @@ export function AppShell({
             key={`${userId}:${coupleId ?? "unpaired"}`}
           >
             <Notice error={signoutError} />
+            {inactivity.data &&
+              !inactivity.data.accepted &&
+              pathname !== "/settings" && (
+                <div className="notice" role="status">
+                  COUPLE có quy định xoá tài khoản sau {inactivity.data.days}{" "}
+                  ngày không hoạt động. Tài khoản của cậu chưa áp dụng cho đến
+                  khi cậu chấp nhận. <Link href="/settings">Đọc quy định</Link>
+                </div>
+              )}
             {offline && (
               <Notice text="Đang mất mạng. Cậu kết nối lại trước khi gửi thay đổi nhé." />
             )}

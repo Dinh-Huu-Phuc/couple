@@ -38,3 +38,4 @@ Thumbs.db
 # Admin source is versioned; its credentials and archived data stay private.
 # Temporary verification checkout, generated from Git-tracked source only.
 /.deploy-check/
+/.verification-erasure/

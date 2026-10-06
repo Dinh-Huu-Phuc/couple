@@ -250,11 +250,17 @@ export const errorMessages: Record<string, string> = {
   ADMIN_SESSION_EXPIRED:
     "Phiên quản trị đã hết hạn. Cậu đăng nhập admin lại nhé.",
   ADMIN_UNAVAILABLE: "Chưa kết nối được khu vực quản trị. Cậu thử lại nhé.",
+  ADMIN_BAN_AUTH_PENDING: "Đã chặn truy cập dữ liệu, nhưng Supabase Auth chưa xác nhận ban đăng nhập. Cậu thử ban lại và kiểm tra nhật ký nhé.",
+  MODERATION_ERASURE_PENDING: "Yêu cầu xoá đã bắt đầu nhưng chưa hoàn tất. Cậu kiểm tra yêu cầu xoá trong trang quản trị rồi thử lại nhé.",
+  INACTIVITY_POLICY_CHANGED:
+    "Mốc ngày đã thay đổi hoặc chưa hợp lệ. Cậu kiểm tra và lưu lại nhé.",
+  INACTIVITY_ERASURE_PENDING:
+    "Chưa xoá được: tài khoản có thể không còn đủ điều kiện hoặc một bước xử lý đang lỗi. Cậu làm mới danh sách và kiểm tra tiến độ yêu cầu xoá.",
   REAUTH_REQUIRED: "Mật khẩu chưa đúng. Cậu xác nhận lại trước khi xoá nhé.",
   DELETION_CONNECTION_FAILED:
     "Chưa kết nối được hệ thống xoá tài khoản. Cậu có thể thử lại; nếu yêu cầu trước đã bắt đầu, hệ thống sẽ tiếp tục từ bước đã lưu.",
   DELETION_RETRY_REQUIRED:
-    "Việc lưu dữ liệu và xoá tài khoản chưa hoàn tất. Cậu bấm thử lại để tiếp tục; dữ liệu đã lưu sẽ được giữ.",
+    "Việc xóa tài khoản chưa hoàn tất. Cậu bấm thử lại để tiếp tục từ bước đã xử lý; hệ thống chưa báo hoàn tất khi còn lỗi.",
   UNAUTHENTICATED: "Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.",
   EMAIL_NOT_VERIFIED: "Cậu cần xác nhận email trước khi kết nối.",
   VALIDATION_ERROR: "Một vài thông tin chưa hợp lệ. Cậu kiểm tra lại nhé.",

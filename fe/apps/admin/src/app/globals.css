@@ -208,6 +208,37 @@ time {
   gap: 10px;
   flex-wrap: wrap;
 }
+.dialog {
+  width: min(580px, calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.dialog::backdrop {
+  background: rgb(48 27 35 / 35%);
+  backdrop-filter: blur(4px);
+}
+.dialog-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dialog-heading h2 {
+  font-size: 26px;
+  margin: 0 0 18px;
+}
+.dialog p {
+  margin: 0 0 16px;
+}
+.dialog .button-row {
+  margin-top: 20px;
+  justify-content: end;
+}
 .full {
   width: 100%;
 }

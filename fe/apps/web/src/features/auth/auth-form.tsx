@@ -6,6 +6,8 @@ import { ArrowRight, Eye, EyeOff, Heart, Mail } from "lucide-react";
 import { safeNext, AppError } from "@couple/domain";
 import { browserClient } from "@/lib/supabase/client";
 import { Button, Notice } from "@/components/ui";
+import { useQuery } from "@tanstack/react-query";
+import { inactivityPolicy } from "@/lib/inactivity";
 type Mode = "login" | "register" | "forgot" | "reset" | "verify";
 const titles = {
   login: "Chào cậu, mừng cậu về.",
@@ -18,7 +20,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
   const params = useSearchParams();
   const next = safeNext(params.get("next"));
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(params.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [show, setShow] = useState(false);
@@ -27,6 +29,13 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
   const [ready, setReady] = useState(mode !== "reset");
+  const [acceptedPolicy, setAcceptedPolicy] = useState<number | null>(null);
+  const policy = useQuery({
+    queryKey: ["inactivity-policy"],
+    queryFn: inactivityPolicy,
+    enabled: mode === "register",
+    staleTime: 0,
+  });
   useEffect(() => {
     if (mode === "reset")
       void browserClient()
@@ -63,10 +72,21 @@ export function AuthForm({ mode }: { mode: Mode }) {
         window.location.assign(next);
       }
       if (mode === "register") {
+        if (!policy.data || acceptedPolicy !== policy.data.version)
+          throw new Error(
+            "Cậu đọc và chấp nhận quy định tài khoản không hoạt động trước nhé.",
+          );
         const { data, error } = await client.auth.signUp({
           email: email.trim(),
           password,
-          options: { emailRedirectTo: callback },
+          options: {
+            emailRedirectTo: callback,
+            data: {
+              inactivity_consent: true,
+              inactivity_version: policy.data.version,
+              inactivity_days: policy.data.days,
+            },
+          },
         });
         if (error) throw error;
         if (data.session) window.location.assign(next);
@@ -140,7 +160,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         <p>
           {mode === "forgot"
             ? "Nếu email có tài khoản, cậu sẽ nhận được liên kết đặt lại mật khẩu."
-            : `Cậu mở thư gửi tới ${email} để xác nhận tài khoản nhé.`}
+            : `Nếu ${email} cần xác nhận, thư sẽ được gửi tới hộp thư này. Cậu kiểm tra cả mục Thư rác nhé.`}
         </p>
         <p className="muted">
           Nhớ kiểm tra cả thư rác. Mở liên kết trong cùng trình duyệt để tiếp
@@ -150,7 +170,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
           Về đăng nhập
           <ArrowRight size={18} />
         </Link>
-        <Link href={authLink("/verify-email")} className="text-button">
+        <Link href={`${authLink("/verify-email")}&email=${encodeURIComponent(email.trim())}`} className="text-button">
           Gửi lại email xác nhận
         </Link>
       </section>
@@ -235,8 +255,42 @@ export function AuthForm({ mode }: { mode: Mode }) {
             Quên mật khẩu?
           </Link>
         )}
+        {mode === "register" && (
+          <>
+            <Notice error={policy.error} retry={() => void policy.refetch()} />
+            {policy.data && (
+              <label style={{ display: "flex", alignItems: "start", gap: 10 }}>
+                <input
+                  type="checkbox"
+                  required
+                  style={{ width: "auto" }}
+                  checked={acceptedPolicy === policy.data.version}
+                  onChange={(e) =>
+                    setAcceptedPolicy(
+                      e.target.checked ? policy.data!.version : null,
+                    )
+                  }
+                />
+                <span>
+                  Tôi chấp nhận việc tự động xoá tài khoản sau{" "}
+                  {policy.data.days} ngày liên tiếp không sử dụng app. Nội dung
+                  riêng và kỷ niệm chung liên quan cũng bị xoá, kể cả kỷ niệm do
+                  người ấy tạo; mong muốn riêng của người ấy được giữ.
+                </span>
+              </label>
+            )}
+          </>
+        )}
         <Notice error={error} text={message} />
-        <Button busy={busy} disabled={!ready} type="submit">
+        <Button
+          busy={busy}
+          disabled={
+            !ready ||
+            (mode === "register" &&
+              (!policy.data || acceptedPolicy !== policy.data.version))
+          }
+          type="submit"
+        >
           {mode === "login"
             ? "Vào khoảng riêng"
             : mode === "register"

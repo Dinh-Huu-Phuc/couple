@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
+import { eraseAccount } from "./erasure.ts";
 
 // Gateway JWT validation stays enabled. Auth also verifies the live user here.
 const allowedOrigins = new Set([
@@ -10,7 +11,6 @@ const allowedOrigins = new Set([
     .map((v) => v.trim())
     .filter(Boolean),
 ]);
-type ArchiveFile = { bucket: string; name: string; archiveKey: string };
 Deno.serve(async (request: Request) => {
   const origin = request.headers.get("Origin");
   if (origin && !allowedOrigins.has(origin))
@@ -69,46 +69,38 @@ Deno.serve(async (request: Request) => {
   if (verified.error || verified.data.user?.id !== user.id)
     return response(403, "REAUTH_REQUIRED");
   await verifier.auth.signOut({ scope: "local" });
-  try {
-    const { data: archive, error } = await admin
-      .schema("api")
-      .rpc("prepare_account_deletion", { p_user_id: user.id });
-    if (error || !archive?.id) throw new Error("prepare");
-    // Resumable: never remove an original before its archive copy exists.
-    for (const file of archive.files as ArchiveFile[]) {
-      const destination = admin.storage.from("deleted-data");
-      const existing = await destination.download(file.archiveKey);
-      if (existing.error) {
-        const original = await admin.storage
-          .from(file.bucket)
-          .download(file.name);
-        if (original.error || !original.data) throw new Error("read original");
-        const copied = await destination.upload(
-          file.archiveKey,
-          original.data,
-          {
-            contentType: original.data.type || "application/octet-stream",
-            upsert: false,
-          },
-        );
-        if (copied.error && (await destination.download(file.archiveKey)).error)
-          throw new Error("copy");
-      }
-      const removed = await admin.storage.from(file.bucket).remove([file.name]);
-      if (removed.error) throw new Error("remove original");
-    }
-    const ready = await admin
-      .schema("api")
-      .rpc("mark_deletion_files_ready", { p_archive_id: archive.id });
-    if (ready.error) throw new Error("manifest incomplete");
-    const deleted = await admin.auth.admin.deleteUser(user.id, false);
-    if (deleted.error) {
-      const check = await admin.auth.admin.getUserById(user.id);
-      if (check.data.user || !check.error || check.error.status !== 404)
-        throw new Error("auth deletion");
-    }
-    return response(200);
-  } catch {
-    return response(503, "DELETION_RETRY_REQUIRED");
-  }
+  const rpc = async (name: string, args: Record<string, string>) => {
+    const result = await admin.schema("api").rpc(name, args);
+    if (result.error) throw new Error("database");
+    return result.data;
+  };
+  const erased = await eraseAccount(
+    {
+      prepare: (userId) =>
+        rpc("prepare_account_erasure", { p_user_id: userId }),
+      removeFiles: async (bucket, names) => {
+        const result = await admin.storage.from(bucket).remove(names);
+        if (result.error) throw new Error("storage");
+      },
+      markFilesRemoved: async (jobId) => {
+        await rpc("mark_account_files_removed", { p_job_id: jobId });
+      },
+      deleteUser: async (userId) => {
+        const result = await admin.auth.admin.deleteUser(userId, false);
+        if (result.error) throw new Error("auth");
+      },
+      userIsMissing: async (userId) => {
+        const result = await admin.auth.admin.getUserById(userId);
+        return !result.data.user && result.error?.status === 404;
+      },
+      recordFailure: async (jobId, stage) => {
+        await rpc("account_erasure_failed", {
+          p_job_id: jobId,
+          p_stage: stage,
+        });
+      },
+    },
+    user.id,
+  );
+  return erased ? response(200) : response(503, "DELETION_RETRY_REQUIRED");
 });

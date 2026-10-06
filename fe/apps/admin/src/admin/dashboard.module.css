@@ -32,6 +32,15 @@
   gap: 16px;
   margin: 28px 0;
 }
+.accounts {
+  margin: 36px 0 56px;
+}
+.accounts form {
+  margin-bottom: 24px;
+}
+.accounts form input[type="number"] {
+  max-width: 220px;
+}
 .record {
   display: flex;
   align-items: center;
@@ -43,9 +52,6 @@
 }
 .record p {
   overflow-wrap: anywhere;
-}
-.detail {
-  margin-top: 32px;
 }
 .stats {
   display: grid;
@@ -67,29 +73,6 @@
 }
 .stats span {
   font-size: 13px;
-}
-.photos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-.photo {
-  margin: 0 0 24px;
-}
-.photo img {
-  width: 100%;
-  max-height: 320px;
-  object-fit: contain;
-  background: #faf1ed;
-  border-radius: 12px;
-}
-.json {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  font-size: 12px;
-  background: #faf1ed;
-  padding: 20px;
-  border-radius: 12px;
 }
 @media (max-width: 600px) {
   .shell {

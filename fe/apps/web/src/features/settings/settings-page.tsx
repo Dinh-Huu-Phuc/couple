@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/components/app-shell";
 import { Button, Dialog, Notice, PageHeading } from "@/components/ui";
 import { ProfileForm } from "./profile-form";
+import { InactivityPolicy } from "./inactivity-policy";
 import { useAction } from "@/lib/use-action";
 export function SettingsPage() {
   const { context, api, client, email, refresh } = useApp();
@@ -113,11 +114,13 @@ export function SettingsPage() {
         </section>
       </div>
       <Notice error={action.error} />
+      {!context.deletionPending && <InactivityPolicy />}
       <section className="panel danger-panel">
         <h2>Xoá tài khoản</h2>
         <p>
-          Tài khoản sẽ bị xoá khỏi hệ thống đăng nhập. Dữ liệu liên quan và ảnh
-          sẽ được lưu trong khu vực riêng của quản trị viên.
+          Tài khoản, nội dung của cậu và kỷ niệm chung liên quan sẽ được xóa
+          khỏi dữ liệu đang hoạt động. Luồng xóa không tạo thêm bản sao nội dung
+          trong khu vực quản trị.
         </p>
         <Button
           className="button-danger"
@@ -143,14 +146,20 @@ export function SettingsPage() {
         >
           <p>
             Thao tác này xoá tài khoản đăng nhập, hồ sơ và dữ liệu của cậu khỏi
-            khu vực người dùng. Nếu đang kết nối, hai người sẽ được ngắt kết
-            nối. Mong muốn do người ấy viết vẫn được giữ.
+            dữ liệu đang hoạt động. Nếu đang kết nối, hai người sẽ được ngắt kết
+            nối. Kỷ niệm chung liên quan cũng bị xóa, kể cả khi người ấy tạo.
+            Mong muốn riêng do người ấy viết vẫn được giữ.
           </p>
           <p>
-            <strong>Dữ liệu không bị xoá hoàn toàn:</strong> bản dữ liệu và ảnh
-            sẽ được lưu riêng, chỉ quản trị viên có quyền xem. Mật khẩu và mã
-            đăng nhập không được lưu vào bản này. Cậu không thể tự khôi phục tài
-            khoản.
+            Quản trị viên chỉ theo dõi mã yêu cầu, thời điểm và kết quả xử lý.
+            Sau khi hoàn tất, nhật ký này không giữ email, tên, nội dung hay ảnh
+            của cậu và được dọn sau 30 ngày, vào đợt dọn hằng ngày tiếp theo.
+            Cậu không thể tự khôi phục tài khoản.
+          </p>
+          <p className="muted">
+            Các bản lưu cũ được tạo trước thay đổi này (nếu có) hiện bị chặn
+            truy cập trong trang quản trị và chưa được xóa. Bản sao lưu hạ tầng
+            có thể còn dữ liệu đến khi hết chu kỳ lưu của nhà cung cấp.
           </p>
           <form
             className="form-stack"

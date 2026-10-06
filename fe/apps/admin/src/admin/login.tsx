@@ -1,6 +1,5 @@
 "use client";
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { adminRequest } from "./client";
@@ -12,14 +11,13 @@ export function AdminLogin() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>();
   const lock = useRef(false);
-  const router = useRouter();
   const cache = useQueryClient();
   return (
     <main className={styles.loginShell}>
       <section className={`panel ${styles.loginCard}`}>
         <span className="wordmark">COUPLE · ADMIN</span>
         <h1>Đăng nhập quản trị.</h1>
-        <p>Nhập tài khoản quản trị để mở khu vực dữ liệu đã xoá.</p>
+        <p>Nhập tài khoản quản trị để theo dõi vận hành và yêu cầu xóa.</p>
         <form
           className="form-stack"
           onSubmit={async (event) => {
@@ -32,7 +30,7 @@ export function AdminLogin() {
               await adminRequest("login", z.object({}), { username, password });
               setPassword("");
               cache.removeQueries({ queryKey: ["admin"] });
-              router.refresh();
+              window.location.replace("/");
             } catch (error) {
               setError(error);
             } finally {

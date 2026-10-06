@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useInfiniteQuery,
   useQuery,
@@ -12,168 +12,14 @@ import { dateLabel } from "@couple/domain";
 import { adminRequest } from "./client";
 import { Button, Loading, Notice, PageHeading } from "@/components/ui";
 import styles from "./dashboard.module.css";
+import { deletionRowSchema, operationsSchema } from "./operations-data";
+import { AdminAccounts } from "./accounts";
 
-const rowSchema = z.object({
-  id: z.uuid(),
-  kind: z.enum(["account", "connection"]),
-  source_user_id: z.uuid(),
-  email: z.string().nullable(),
-  display_name: z.string().nullable(),
-  status: z.enum(["pending", "files_ready", "completed"]),
-  created_at: z.string(),
-  completed_at: z.string().nullable(),
-  photo_count: z.number(),
-});
-const detailSchema = rowSchema.omit({ photo_count: true }).extend({
-  payload: z.record(z.string(), z.unknown()),
-  files: z.array(
-    z.object({ bucket: z.string(), name: z.string(), archiveKey: z.string() }),
-  ),
-});
 const statusLabels = {
-  pending: "Đang lưu ảnh",
-  files_ready: "Đang xoá tài khoản",
-  completed: "Đã hoàn tất",
+  pending: "Đang xử lý ảnh",
+  files_ready: "Đang xử lý tài khoản",
+  completed: "Tài khoản đã được xóa",
 };
-function ArchivePhoto({
-  id,
-  index,
-  name,
-}: {
-  id: string;
-  index: number;
-  name: string;
-}) {
-  const [url, setUrl] = useState<string>();
-  const [error, setError] = useState<unknown>();
-  useEffect(() => {
-    let alive = true;
-    let objectUrl: string | undefined;
-    void fetch(`/api/photo?id=${id}&index=${index}`, {
-      credentials: "same-origin",
-      cache: "no-store",
-    })
-      .then(async (response) => {
-        if (response.status === 401) window.location.replace("/");
-        if (!response.ok) throw new Error("Không thể tải ảnh đã lưu.");
-        return response.blob();
-      })
-      .then((blob) => {
-        if (!alive) return;
-        objectUrl = URL.createObjectURL(blob);
-        setUrl(objectUrl);
-      })
-      .catch((failure) => {
-        if (alive) setError(failure);
-      });
-    return () => {
-      alive = false;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [id, index]);
-  return (
-    <figure className={styles.photo}>
-      {url ? (
-        <>
-          {/* Images are proxied by the server after validating the admin session. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt="Ảnh trong dữ liệu đã xoá" />
-          <a
-            className="text-button"
-            href={url}
-            download={name.split("/").at(-1)}
-          >
-            Tải ảnh
-          </a>
-        </>
-      ) : (
-        <Notice error={error} text={error ? undefined : "Đang mở ảnh…"} />
-      )}
-    </figure>
-  );
-}
-function ArchiveDetail({ id }: { id: string }) {
-  const detail = useQuery({
-    queryKey: ["admin", "detail", id],
-    queryFn: () => adminRequest(`detail?id=${id}`, detailSchema),
-    refetchInterval: 30_000,
-  });
-  if (detail.isPending) return <Loading text="Đang đọc bản lưu…" />;
-  if (!detail.data)
-    return <Notice error={detail.error} retry={() => void detail.refetch()} />;
-  const archive = detail.data;
-  function download() {
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(archive, null, 2)], {
-        type: "application/json",
-      }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `couple-archive-${archive.id}.json`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-  return (
-    <section className={`panel ${styles.detail}`}>
-      <h2>Chi tiết bản lưu</h2>
-      <p>
-        <strong>{archive.display_name ?? "Chưa đặt tên"}</strong> ·{" "}
-        {archive.email}
-      </p>
-      <p className="muted">
-        {statusLabels[archive.status]} · {dateLabel(archive.created_at)}
-      </p>
-      <Button className="button-secondary" onClick={download}>
-        Tải bản dữ liệu JSON
-      </Button>
-      <div className={styles.stats}>
-        {Object.entries(archive.payload)
-          .filter(([, value]) => Array.isArray(value))
-          .map(([key, value]) => (
-            <div key={key}>
-              <strong>{(value as unknown[]).length}</strong>
-              <span>
-                {(
-                  {
-                    wishes: "Mong muốn",
-                    draws: "Thẻ đã mở",
-                    memories: "Kỷ niệm",
-                    couples: "Kết nối",
-                    members: "Thành viên",
-                    invites: "Mã mời",
-                    requests: "Yêu cầu",
-                    history: "Lịch sử",
-                  } as Record<string, string>
-                )[key] ?? key}
-              </span>
-            </div>
-          ))}
-      </div>
-      {archive.files.length > 0 && (
-        <>
-          <h3>Ảnh đã lưu ({archive.files.length})</h3>
-          <div className={styles.photos}>
-            {archive.files.map((file, index) => (
-              <ArchivePhoto
-                key={file.archiveKey}
-                id={archive.id}
-                index={index}
-                name={file.name}
-              />
-            ))}
-          </div>
-        </>
-      )}
-      <details>
-        <summary>Xem toàn bộ dữ liệu</summary>
-        <pre className={styles.json}>
-          {JSON.stringify(archive.payload, null, 2)}
-        </pre>
-      </details>
-    </section>
-  );
-}
 export function AdminDashboard() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -193,10 +39,13 @@ export function AdminDashboard() {
       setLoggingOut(false);
     }
   }
-  const [kind, setKind] = useState<"account" | "connection" | "">("");
-  const [selected, setSelected] = useState<string>();
+  const operations = useQuery({
+    queryKey: ["admin", "operations"],
+    queryFn: () => adminRequest("operations", operationsSchema),
+    refetchInterval: 30_000,
+  });
   const rows = useInfiniteQuery({
-    queryKey: ["admin", "deleted-data", kind],
+    queryKey: ["admin", "deletion-requests"],
     initialPageParam: undefined as { at: string; id: string } | undefined,
     queryFn: ({ pageParam }) => {
       const params = new URLSearchParams();
@@ -204,8 +53,7 @@ export function AdminDashboard() {
         params.set("before", pageParam.at);
         params.set("beforeId", pageParam.id);
       }
-      if (kind) params.set("kind", kind);
-      return adminRequest(`list?${params}`, z.array(rowSchema));
+      return adminRequest(`list?${params}`, z.array(deletionRowSchema));
     },
     getNextPageParam: (last) =>
       last.length === 20
@@ -234,79 +82,115 @@ export function AdminDashboard() {
       </header>
       <PageHeading
         eyebrow="KHU VỰC QUẢN TRỊ RIÊNG"
-        title="Dữ liệu đã xoá."
-        description="Bản lưu lịch sử kết nối và tài khoản đã xoá. Cần phiên đăng nhập quản trị riêng để xem."
+        title="Vận hành COUPLE."
+        description="Theo dõi hoạt động và tiến độ xử lý yêu cầu xóa tài khoản."
       />
       <Notice error={logoutError} />
-      <div className="button-row">
-        {(
-          [
-            { value: "", label: "Tất cả" },
-            { value: "account", label: "Tài khoản" },
-            { value: "connection", label: "Lịch sử kết nối" },
-          ] as const
-        ).map((filter) => (
-          <Button
-            key={filter.value}
-            className={kind === filter.value ? "" : "button-secondary"}
-            onClick={() => {
-              setKind(filter.value);
-              setSelected(undefined);
-            }}
-          >
-            {filter.label}
-          </Button>
-        ))}
+      <Notice
+        error={operations.error}
+        retry={() => void operations.refetch()}
+      />
+      {operations.isPending ? (
+        <Loading text="Đang kiểm tra vận hành…" />
+      ) : (
+        operations.data && (
+          <div className={styles.stats}>
+            {[
+              [operations.data.accounts, "Tài khoản hiện có"],
+              [operations.data.activeCouples, "Cặp đang kết nối"],
+              [operations.data.pending, "Yêu cầu chưa hoàn tất"],
+              [operations.data.failed, "Yêu cầu cần thử lại"],
+              [
+                operations.data.legacyRequests,
+                "Bản lưu cũ đang bị chặn truy cập",
+              ],
+              [operations.data.legacyObjects, "Ảnh trong kho lưu cũ cần dọn"],
+            ].map(([count, label]) => (
+              <div key={label}>
+                <strong>{count}</strong>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+      <AdminAccounts />
+      <section aria-labelledby="deletion-heading">
+        <h2 id="deletion-heading">Yêu cầu xóa tài khoản</h2>
+        <p className="muted">
+          Mã yêu cầu giúp đối chiếu tiến độ xử lý. Thông tin tài khoản và nội
+          dung riêng tư không được hiển thị tại đây.
+        </p>
         <Button
           className="button-secondary"
-          busy={rows.isFetching}
-          onClick={() => void rows.refetch()}
+          busy={rows.isFetching || operations.isFetching}
+          onClick={() => {
+            void rows.refetch();
+            void operations.refetch();
+          }}
         >
           Làm mới
         </Button>
-      </div>
-      <Notice error={rows.error} retry={() => void rows.refetch()} />
-      {rows.isPending ? (
-        <Loading text="Đang đọc dữ liệu đã xoá…" />
-      ) : (
-        <div className={styles.records}>
-          {!all.length && (
-            <p className="muted">Chưa có dữ liệu đã xoá trong nhóm này.</p>
-          )}
-          {all.map((row) => (
-            <article key={row.id} className={`panel ${styles.record}`}>
-              <div>
-                <span className="eyebrow">
-                  {row.kind === "account" ? "TÀI KHOẢN" : "LỊCH SỬ KẾT NỐI"}
-                </span>
-                <h2>{row.display_name ?? "Chưa đặt tên"}</h2>
-                <p>{row.email}</p>
-                <p className="muted">
-                  {dateLabel(row.created_at)} · {statusLabels[row.status]} ·{" "}
-                  {row.photo_count} ảnh
-                </p>
-              </div>
-              <Button
-                className="button-secondary"
-                onClick={() => setSelected(row.id)}
-                aria-pressed={selected === row.id}
-              >
-                Xem bản lưu
-              </Button>
-            </article>
-          ))}
-        </div>
-      )}
-      {rows.hasNextPage && (
-        <Button
-          className="button-secondary"
-          busy={rows.isFetchingNextPage}
-          onClick={() => void rows.fetchNextPage()}
-        >
-          Xem bản lưu cũ hơn
-        </Button>
-      )}
-      {selected && <ArchiveDetail key={selected} id={selected} />}
+        <Notice error={rows.error} retry={() => void rows.refetch()} />
+        {rows.isPending ? (
+          <Loading text="Đang đọc yêu cầu xóa…" />
+        ) : (
+          <div className={styles.records}>
+            {!all.length && (
+              <p className="muted">Chưa có yêu cầu xóa tài khoản.</p>
+            )}
+            {all.map((row) => (
+              <article key={row.id} className={`panel ${styles.record}`}>
+                <div>
+                  <span className="eyebrow">
+                    {row.workflow === "legacy" ? "LUỒNG CŨ · " : ""}
+                    {statusLabels[row.status]}
+                  </span>
+                  <p>
+                    Mã yêu cầu: <code>{row.id}</code>
+                  </p>
+                  <p className="muted">
+                    Tiếp nhận: {dateLabel(row.created_at)}
+                  </p>
+                  {row.completed_at && (
+                    <p className="muted">
+                      Xóa tài khoản: {dateLabel(row.completed_at)}
+                    </p>
+                  )}
+                  {row.last_error && (
+                    <p role="status">
+                      Cần thử lại bước{" "}
+                      {
+                        {
+                          storage: "xóa ảnh",
+                          auth: "xóa đăng nhập",
+                          database: "xử lý cơ sở dữ liệu",
+                        }[row.last_error]
+                      }
+                      .
+                    </p>
+                  )}
+                  {row.audit_expires_at && (
+                    <p className="muted">
+                      Hết thời hạn lưu nhật ký:{" "}
+                      {dateLabel(row.audit_expires_at)}
+                    </p>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+        {rows.hasNextPage && (
+          <Button
+            className="button-secondary"
+            busy={rows.isFetchingNextPage}
+            onClick={() => void rows.fetchNextPage()}
+          >
+            Xem yêu cầu cũ hơn
+          </Button>
+        )}
+      </section>
     </main>
   );
 }
