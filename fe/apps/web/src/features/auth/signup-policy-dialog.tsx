@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Button, Dialog } from "@/components/ui";
 
 export type SignupPolicyPage = "terms" | "privacy";
@@ -68,10 +69,28 @@ export function SignupPolicyDialog({
               lưu hạ tầng có thể còn trong thời hạn lưu của nhà cung cấp.
             </p>
             <h3>Dịch vụ hỗ trợ</h3>
-            <p>
-              COUPLE sử dụng Supabase để lưu tài khoản và dữ liệu, Vercel để vận
-              hành website, và Resend để gửi email xác nhận tài khoản.
-            </p>
+            <p>Cậu có thể liên hệ chủ ứng dụng qua email hoặc Zalo:</p>
+            <div className="signup-contact-links">
+              <a href="mailto:phucgp74@gmail.com">
+                <Image
+                  src="/icons/envelope-regular-full.svg"
+                  alt=""
+                  width={22}
+                  height={22}
+                />
+                <span>phucgp74@gmail.com</span>
+              </a>
+              <a
+                href="https://zalo.me/0398743229"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i className="fab-vn fab-vn-zalo" aria-hidden="true">
+                  Zalo
+                </i>
+                <span>0398743229</span>
+              </a>
+            </div>
           </>
         )}
       </div>

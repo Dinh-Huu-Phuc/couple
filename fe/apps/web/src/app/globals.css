@@ -308,6 +308,51 @@ time {
   margin: 18px 0 6px;
   font-size: 16px;
 }
+.signup-contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.signup-contact-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 13px;
+  text-decoration: none;
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    color 150ms;
+}
+.signup-contact-links a:hover,
+.signup-contact-links a:focus-visible {
+  background: #e8f3ff;
+  border-color: #8db8ed;
+  color: #1764b5;
+}
+.signup-contact-links .fab-vn-zalo {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #1688e6;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+}
+.signup-contact-links a:hover .fab-vn-zalo,
+.signup-contact-links a:focus-visible .fab-vn-zalo {
+  background: #0866bc;
+}
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
