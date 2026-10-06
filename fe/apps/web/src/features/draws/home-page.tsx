@@ -18,7 +18,7 @@ import { useMemories } from "@/lib/use-list";
 import { DrawCard } from "./draw-card";
 import { MemoryCard } from "@/features/memories/memory-card";
 export function HomePage() {
-  const { context, userId, client, api } = useApp();
+  const { context, userId, client, api, pendingWishCount } = useApp();
   const action = useAction();
   const [category, setCategory] = useState("");
   const [budget, setBudget] = useState("");
@@ -145,6 +145,14 @@ export function HomePage() {
           >
             <Shuffle size={19} />
             Bốc một mong muốn
+            {pendingWishCount > 0 && (
+              <span
+                className="draw-count-badge"
+                aria-label={`${pendingWishCount} mong muốn mới`}
+              >
+                {pendingWishCount > 99 ? "99+" : pendingWishCount}
+              </span>
+            )}
           </Button>
           <p className="draw-note">
             Một điều người ấy viết riêng, đang chờ được lắng nghe.

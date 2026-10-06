@@ -31,6 +31,7 @@ type AppValue = {
   context: Context;
   userId: string;
   email: string;
+  pendingWishCount: number;
   refresh: () => Promise<void>;
 };
 const AppContext = createContext<AppValue | null>(null);
@@ -207,7 +208,15 @@ export function AppShell({
     await cache.invalidateQueries({ queryKey: [userId] });
   };
   return (
-    <AppContext.Provider value={{ context: ctx, userId, email, refresh }}>
+    <AppContext.Provider
+      value={{
+        context: ctx,
+        userId,
+        email,
+        pendingWishCount: pendingWishes.data ?? 0,
+        refresh,
+      }}
+    >
       <div className="app-layout">
         <aside className="sidebar">
           <Link href="/home" className="wordmark">

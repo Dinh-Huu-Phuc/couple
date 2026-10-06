@@ -1257,6 +1257,18 @@ time {
   min-width: 265px;
   border-radius: 10px;
 }
+.draw-count-badge {
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #fff9f5;
+  color: var(--rose-dark);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: center;
+}
 .draw-note {
   font-size: 11px;
   margin: 15px 0 0;
