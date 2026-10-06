@@ -46,6 +46,8 @@ export async function rpc<T>(
 }
 export const queryKeys = {
   context: (user: string) => [user, "context"] as const,
+  pendingPartnerWishes: (user: string, couple: string | null) =>
+    [user, couple, "pending-partner-wishes"] as const,
   requests: (user: string) => [user, "requests"] as const,
   wishes: (user: string, couple: string | null, status: string) =>
     [user, couple, "wishes", status] as const,
@@ -65,6 +67,13 @@ const wishArgs = (p: WishInput) => ({
 export function coupleApi(client: SupabaseClient) {
   return {
     context: () => rpc(client, "get_my_context", {}, contextSchema),
+    pendingPartnerWishes: () =>
+      rpc(
+        client,
+        "pending_partner_wish_count",
+        {},
+        z.number().int().nonnegative(),
+      ),
     profile: (name: string, timezone: string) =>
       rpc(
         client,

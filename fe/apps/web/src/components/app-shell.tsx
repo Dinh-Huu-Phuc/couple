@@ -105,6 +105,19 @@ export function AppShell({
     };
   }, [userId, trackActivity]);
   const coupleId = ctx?.couple?.id;
+  const pendingWishes = useQuery({
+    queryKey: queryKeys.pendingPartnerWishes(userId, coupleId ?? null),
+    queryFn: () => coupleApi(client()).pendingPartnerWishes(),
+    enabled: !!coupleId && !!ctx?.emailVerified && !ctx?.deletionPending,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+  });
+  const pendingBadge = pendingWishes.data
+    ? pendingWishes.data > 99
+      ? "99+"
+      : String(pendingWishes.data)
+    : null;
   useEffect(() => {
     if (
       query.error instanceof AppError &&
@@ -222,6 +235,14 @@ export function AppShell({
               >
                 <Icon size={20} />
                 <span>{label}</span>
+                {href === "/home" && pendingBadge && (
+                  <span
+                    className="pending-wish-badge"
+                    aria-label={`${pendingWishes.data} mong muốn mới`}
+                  >
+                    {pendingBadge}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
@@ -303,6 +324,14 @@ export function AppShell({
             >
               <Icon size={20} />
               <span>{label}</span>
+              {href === "/home" && pendingBadge && (
+                <span
+                  className="pending-wish-badge bottom"
+                  aria-label={`${pendingWishes.data} mong muốn mới`}
+                >
+                  {pendingBadge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
