@@ -1416,9 +1416,10 @@ time {
   background: #f9eee7;
 }
 .memory-text-art span {
-  font-family: Georgia, serif;
+  font-family: "Couple Serif", Georgia, serif;
   font-style: italic;
   font-size: 16px;
+  letter-spacing: normal;
 }
 .memory-draw-title {
   font-family: Georgia, serif;
