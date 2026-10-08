@@ -22,6 +22,7 @@ export function HomePage() {
   const action = useAction();
   const [category, setCategory] = useState("");
   const [budget, setBudget] = useState("");
+  const [opening, setOpening] = useState(false);
   const memories = useMemories();
   const open = useQuery({
     queryKey: [userId, context.couple?.id, "open-draw"],
@@ -55,12 +56,18 @@ export function HomePage() {
           filter.category,
           filter.budget,
         ),
-      (result) => {
+      async (result) => {
         action.keys.clear("draw", filter);
         if (result.resumed)
           action.setMessage(
             "Cậu đang có một thẻ chưa xử lý. Mình tiếp tục với thẻ này nhé.",
           );
+        else {
+          setOpening(true);
+          if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+            await new Promise((resolve) => window.setTimeout(resolve, 760));
+          setOpening(false);
+        }
       },
     );
   }
@@ -136,11 +143,12 @@ export function HomePage() {
               <option value="1000000">1.000.000 ₫</option>
             </select>
           </label>
-          <Envelope />
+          <Envelope opening={opening} />
           <Button
             busy={action.busy}
             disabled={open.isError}
             className="draw-button"
+            aria-label="Bốc một mong muốn"
             onClick={() => void draw()}
           >
             <Shuffle size={19} />
@@ -148,14 +156,16 @@ export function HomePage() {
             {pendingWishCount > 0 && (
               <span
                 className="draw-count-badge"
-                aria-label={`${pendingWishCount} mong muốn mới`}
+                aria-hidden="true"
               >
                 {pendingWishCount > 99 ? "99+" : pendingWishCount}
               </span>
             )}
           </Button>
           <p className="draw-note">
-            Một điều người ấy viết riêng, đang chờ được lắng nghe.
+            {pendingWishCount > 0
+              ? `Người ấy có ${pendingWishCount} mong muốn mới. Mỗi lần bốc sẽ mở ngẫu nhiên một lá thư và con số giảm dần.`
+              : "Một điều người ấy viết riêng, đang chờ được lắng nghe."}
           </p>
         </section>
       )}

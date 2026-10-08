@@ -8,6 +8,9 @@ import { Button, Dialog, Notice, PageHeading } from "@/components/ui";
 import { ProfileForm } from "./profile-form";
 import { InactivityPolicy } from "./inactivity-policy";
 import { useAction } from "@/lib/use-action";
+import Link from "next/link";
+import { CircleHelp } from "lucide-react";
+import { ThemeSettings } from "@/components/theme";
 export function SettingsPage() {
   const { context, api, client, email, refresh } = useApp();
   const action = useAction();
@@ -94,6 +97,7 @@ export function SettingsPage() {
             <ProfileForm />
           )}
         </section>
+        <ThemeSettings />
         <section className="panel">
           <h2>Tài khoản</h2>
           <p>{email}</p>
@@ -111,6 +115,14 @@ export function SettingsPage() {
           >
             Đăng xuất
           </Button>
+        </section>
+        <section className="panel support-panel">
+          <CircleHelp size={24} />
+          <div>
+            <h2>Hỗ trợ & góp ý</h2>
+            <p className="muted">Xem câu hỏi thường gặp, báo lỗi hoặc gửi đề xuất cho COUPLE.</p>
+            <Link href="/support" className="button button-secondary">Mở trang hỗ trợ</Link>
+          </div>
         </section>
       </div>
       <Notice error={action.error} />

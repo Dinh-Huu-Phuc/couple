@@ -97,10 +97,10 @@ export function Empty({
     </div>
   );
 }
-export function Envelope({ small = false }: { small?: boolean }) {
+export function Envelope({ small = false, opening = false }: { small?: boolean; opening?: boolean }) {
   return (
     <div
-      className={`envelope-scene ${small ? "small" : ""}`}
+      className={`envelope-scene ${small ? "small" : ""} ${opening ? "opening" : ""}`}
       aria-hidden="true"
     >
       <div className="envelope-paper" />

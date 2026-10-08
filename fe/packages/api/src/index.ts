@@ -4,12 +4,14 @@ import {
   AppError,
   contextSchema,
   drawSchema,
+  feedbackSchema,
   inviteSchema,
   memorySchema,
   previewSchema,
   requestSchema,
   wishSchema,
   type WishInput,
+  type FeedbackInput,
 } from "@couple/domain";
 
 const envelope = z.discriminatedUnion("ok", [
@@ -54,6 +56,7 @@ export const queryKeys = {
   draws: (user: string, couple: string) => [user, couple, "draws"] as const,
   memories: (user: string, couple: string) =>
     [user, couple, "memories"] as const,
+  feedback: (user: string) => [user, "feedback"] as const,
 };
 const ok = z.unknown();
 const wishArgs = (p: WishInput) => ({
@@ -187,6 +190,21 @@ export function coupleApi(client: SupabaseClient) {
         { p_couple_id: coupleId, p_request_id: key },
         ok,
       ),
+    createFeedback: (input: FeedbackInput, key: string) =>
+      rpc(
+        client,
+        "create_feedback",
+        {
+          p_request_id: key,
+          p_type: input.type,
+          p_title: input.title,
+          p_body: input.body,
+          p_reply_email: input.replyEmail,
+        },
+        feedbackSchema,
+      ),
+    feedback: () =>
+      rpc(client, "list_my_feedback", { p_limit: 20 }, z.array(feedbackSchema)),
   };
 }
 export type Cursor = { at: string; id: string } | undefined;

@@ -35,6 +35,33 @@
 .accounts {
   margin: 36px 0 56px;
 }
+.feedback {
+  margin: 36px 0 56px;
+}
+.sectionTop,
+.feedbackMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.sectionTop label {
+  min-width: 190px;
+}
+.feedbackRecord {
+  display: grid;
+  gap: 12px;
+}
+.feedbackRecord h3,
+.feedbackRecord p {
+  margin: 0;
+}
+.feedbackRecord blockquote {
+  margin: 4px 0;
+  padding: 16px;
+  border-left: 3px solid #93445b;
+  background: #faf1ed;
+}
 .accounts form {
   margin-bottom: 24px;
 }

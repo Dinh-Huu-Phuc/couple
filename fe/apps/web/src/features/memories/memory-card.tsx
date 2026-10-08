@@ -4,13 +4,14 @@ import Image from "next/image";
 import { Heart, ImageIcon } from "lucide-react";
 import { dateLabel, type Memory } from "@couple/domain";
 import { useApp } from "@/components/app-shell";
-import { Button } from "@/components/ui";
+import { Button, Dialog } from "@/components/ui";
 export function MemoryCard({ memory }: { memory: Memory }) {
   const { client, context } = useApp();
   const [photo, setPhoto] = useState<{ key: string; url: string }>();
   const url = photo?.key === memory.photo_storage_key ? photo.url : undefined;
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [large, setLarge] = useState(false);
   useEffect(() => {
     let active = true;
     let objectUrl: string | undefined;
@@ -39,14 +40,10 @@ export function MemoryCard({ memory }: { memory: Memory }) {
         url ? (
           <div className="memory-photo">
             {/* Blob URL requires an authenticated download and is revoked on unmount. */}
-            <Image
-              unoptimized
-              width={800}
-              height={600}
-              src={url}
-              alt={`Kỷ niệm: ${memory.draws?.snapshot.title ?? "của hai mình"}`}
-              loading="lazy"
-            />
+            <button type="button" className="memory-image-button" onClick={() => setLarge(true)} aria-label="Xem ảnh kỷ niệm lớn hơn">
+              <Image unoptimized width={800} height={600} src={url}
+                alt={`Kỷ niệm: ${memory.draws?.snapshot.title ?? "của hai mình"}`} loading="lazy" />
+            </button>
           </div>
         ) : (
           <div className="memory-photo-placeholder">
@@ -74,6 +71,11 @@ export function MemoryCard({ memory }: { memory: Memory }) {
         <h3>{memory.draws?.snapshot.title ?? "Kỷ niệm của hai mình"}</h3>
         <p className="preserve-lines">{memory.message}</p>
       </div>
+      {large && url && (
+        <Dialog title={memory.draws?.snapshot.title ?? "Kỷ niệm của hai mình"} close={() => setLarge(false)}>
+          <Image unoptimized width={1200} height={900} className="memory-lightbox" src={url} alt="Kỷ niệm của hai mình ở kích thước lớn" />
+        </Dialog>
+      )}
     </article>
   );
 }

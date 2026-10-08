@@ -17,6 +17,7 @@ import {
   operationsSchema,
   policySchema,
   activityRowSchema,
+  adminFeedbackSchema,
 } from "./operations-data";
 import { eraseAccount, inactivityErasurePort } from "./inactivity-erasure";
 
@@ -124,13 +125,39 @@ export async function adminHandler(request: NextRequest, action: string) {
       request.method !== "GET" &&
       !(
         request.method === "POST" &&
-        ["inactivity-policy", "delete-inactive", "moderation"].includes(action)
+        ["inactivity-policy", "delete-inactive", "moderation", "feedback"].includes(action)
       )
     )
       return reply(405, "METHOD_NOT_ALLOWED");
     if (!(await adminSessionValid()))
       return reply(401, "ADMIN_SESSION_EXPIRED");
     const { client } = backend();
+    if (action === "feedback") {
+      if (request.method === "POST") {
+        const body = z.object({
+          id: z.uuid(),
+          status: z.enum(["new", "reviewing", "resolved"]),
+          reply: z.string().trim().max(4000),
+        }).safeParse(await readBoundedJson(request));
+        if (!body.success) return reply(400, "VALIDATION_ERROR");
+        const result = await client.schema("api").rpc("admin_update_feedback", {
+          p_id: body.data.id,
+          p_status: body.data.status,
+          p_admin_reply: body.data.reply || null,
+        });
+        const parsed = adminFeedbackSchema.safeParse(result.data);
+        if (result.error || !parsed.success) return reply(503, "ADMIN_UNAVAILABLE");
+        return reply(200, undefined, parsed.data);
+      }
+      const status = z.enum(["new", "reviewing", "resolved"]).nullable().safeParse(
+        request.nextUrl.searchParams.get("status"),
+      );
+      if (!status.success) return reply(400, "VALIDATION_ERROR");
+      const result = await client.schema("api").rpc("admin_feedback", { p_status: status.data });
+      const parsed = z.array(adminFeedbackSchema).safeParse(result.data);
+      if (result.error || !parsed.success) return reply(503, "ADMIN_UNAVAILABLE");
+      return reply(200, undefined, parsed.data);
+    }
     if (action === "inactivity-policy") {
       if (request.method === "POST") {
         const body = policySchema.safeParse(await readBoundedJson(request));

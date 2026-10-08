@@ -38,3 +38,15 @@ export const activityRowSchema = z.object({
   ban_reason: z.enum(["spam", "harassment", "abuse", "other"]).nullable().default(null),
   banned_at: z.string().nullable().default(null),
 });
+export const adminFeedbackSchema = z.object({
+  id: z.uuid(),
+  type: z.enum(["bug", "feature", "support"]),
+  title: z.string(),
+  body: z.string(),
+  reply_email: z.string(),
+  status: z.enum(["new", "reviewing", "resolved"]),
+  admin_reply: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  reviewed_at: z.string().nullable(),
+});

@@ -19,6 +19,7 @@ export function DrawCard({ draw }: { draw: Draw }) {
   const action = useAction();
   const [memory, setMemory] = useState(false);
   const [response, setResponse] = useState<"discuss" | "deferred" | null>(null);
+  const [celebrating, setCelebrating] = useState(false);
   const mine = draw.drawn_by === userId;
   return (
     <article className={`draw-card ${mine ? "my-draw" : ""}`}>
@@ -31,10 +32,11 @@ export function DrawCard({ draw }: { draw: Draw }) {
       <span className="category">{categories[draw.snapshot.category]}</span>
       <h2>{draw.snapshot.title}</h2>
       <p className="preserve-lines">{draw.snapshot.description}</p>
-      <div className="wish-meta">
-        <span>{money(draw.snapshot.budgetVnd)}</span>
-        <time>{dateLabel(draw.drawn_at, context.profile.timezone)}</time>
-      </div>
+      <dl className="draw-meta-grid">
+        <div><dt>Ngân sách</dt><dd>{money(draw.snapshot.budgetVnd)}</dd></div>
+        <div><dt>Mở lúc</dt><dd><time>{dateLabel(draw.drawn_at, context.profile.timezone)}</time></dd></div>
+        {draw.completed_at && <div><dt>Hoàn thành</dt><dd><time>{dateLabel(draw.completed_at, context.profile.timezone)}</time></dd></div>}
+      </dl>
       {draw.discussion_message && (
         <blockquote className="draw-reply">
           <header>
@@ -108,7 +110,15 @@ export function DrawCard({ draw }: { draw: Draw }) {
           {draw.status === "accepted" && (
             <Button
               busy={action.busy}
-              onClick={() => void action.run(() => api.complete(draw.id))}
+              onClick={() => void action.run(
+                () => api.complete(draw.id),
+                async () => {
+                  setCelebrating(true);
+                  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+                    await new Promise((resolve) => window.setTimeout(resolve, 700));
+                  setCelebrating(false);
+                },
+              )}
             >
               <Check size={16} />
               Đã hoàn thành
@@ -141,6 +151,7 @@ export function DrawCard({ draw }: { draw: Draw }) {
         />
       )}
       {memory && <MemoryEditor draw={draw} close={() => setMemory(false)} />}
+      {celebrating && <div className="completion-hearts" aria-hidden="true"><Heart /><Heart /><Heart /></div>}
     </article>
   );
 }

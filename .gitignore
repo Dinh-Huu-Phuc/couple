@@ -9,6 +9,8 @@
 **/md/
 # Generated agent notes and other Markdown documents stay out of Git.
 *.md
+!AGENTS.md
+!**/AGENTS.md
 !README.md
 dist/
 coverage/
@@ -21,7 +23,12 @@ test-results/
 .env.e2e
 
 **/fe/tests/
+!fe/tests/
+fe/tests/*
+!fe/tests/ui-refresh.spec.ts
 **/fe/test-results/
+
+**/fe/apps/web/assets/
 
 # Supabase local state
 be/supabase/.branches/

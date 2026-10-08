@@ -14,6 +14,7 @@ import { Button, Loading, Notice, PageHeading } from "@/components/ui";
 import styles from "./dashboard.module.css";
 import { deletionRowSchema, operationsSchema } from "./operations-data";
 import { AdminAccounts } from "./accounts";
+import { AdminFeedback } from "./feedback";
 
 const statusLabels = {
   pending: "Đang xử lý ảnh",
@@ -115,6 +116,7 @@ export function AdminDashboard() {
         )
       )}
       <AdminAccounts />
+      <AdminFeedback />
       <section aria-labelledby="deletion-heading">
         <h2 id="deletion-heading">Yêu cầu xóa tài khoản</h2>
         <p className="muted">

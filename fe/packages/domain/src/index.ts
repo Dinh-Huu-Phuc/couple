@@ -153,6 +153,38 @@ export const requestSchema = z.object({
   inviter: personSchema.optional(),
 });
 export type ConnectionRequest = z.infer<typeof requestSchema>;
+export const feedbackTypeLabels = {
+  bug: "Báo lỗi",
+  feature: "Đề xuất tính năng",
+  support: "Cần hỗ trợ",
+} as const;
+export const feedbackStatusLabels = {
+  new: "Mới gửi",
+  reviewing: "Đang xem",
+  resolved: "Đã xử lý",
+} as const;
+export const feedbackTypeSchema = z.enum(["bug", "feature", "support"]);
+export const feedbackStatusSchema = z.enum(["new", "reviewing", "resolved"]);
+export const feedbackInputSchema = z.object({
+  type: feedbackTypeSchema,
+  title: z.string().trim().min(5, "Tiêu đề cần ít nhất 5 ký tự.").max(120),
+  body: z.string().trim().min(10, "Nội dung cần ít nhất 10 ký tự.").max(4000),
+  replyEmail: z.email("Email phản hồi chưa đúng định dạng.").max(254),
+});
+export type FeedbackInput = z.infer<typeof feedbackInputSchema>;
+export const feedbackSchema = z.object({
+  id: uuid,
+  type: feedbackTypeSchema,
+  title: z.string(),
+  body: z.string(),
+  reply_email: z.string(),
+  status: feedbackStatusSchema,
+  admin_reply: z.string().nullable(),
+  created_at: date,
+  updated_at: date,
+  reviewed_at: date.nullable(),
+});
+export type Feedback = z.infer<typeof feedbackSchema>;
 export const inviteSchema = z.object({
   inviteId: uuid,
   code: z.string(),

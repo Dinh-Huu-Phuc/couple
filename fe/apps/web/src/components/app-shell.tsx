@@ -19,6 +19,8 @@ import {
   Settings,
   LogOut,
   RefreshCw,
+  CircleHelp,
+  UserRound,
 } from "lucide-react";
 import { coupleApi, queryKeys } from "@couple/api";
 import { AppError, initials, safeNext, type Context } from "@couple/domain";
@@ -26,6 +28,7 @@ import { browserClient } from "@/lib/supabase/client";
 import { Loading, Notice } from "./ui";
 import { appName } from "@couple/theme";
 import { inactivityStatus } from "@/lib/inactivity";
+import { ThemeMenu } from "./theme";
 const client = () => browserClient();
 type AppValue = {
   context: Context;
@@ -265,6 +268,13 @@ export function AppShell({
               </p>
             </div>
             <Link
+              href="/support"
+              className={pathname === "/support" ? "active" : ""}
+            >
+              <CircleHelp size={19} />
+              Hỗ trợ & góp ý
+            </Link>
+            <Link
               href="/settings"
               className={pathname === "/settings" ? "active" : ""}
             >
@@ -290,12 +300,19 @@ export function AppShell({
               >
                 <RefreshCw size={17} />
               </button>
-              <Link href="/settings" className="profile-link">
-                <span className="avatar">
-                  {initials(ctx.profile.displayName)}
-                </span>
-                <span>Xin chào, {ctx.profile.displayName || "cậu"}</span>
-              </Link>
+              <ThemeMenu />
+              <details className="profile-menu">
+                <summary className="profile-link" aria-label="Mở menu tài khoản">
+                  <span className="avatar">{initials(ctx.profile.displayName)}</span>
+                  <span>Xin chào, {ctx.profile.displayName || "cậu"}</span>
+                </summary>
+                <div className="popover-menu account-menu">
+                  <div className="account-menu-name"><UserRound size={17} /><span>{ctx.profile.displayName || "Tài khoản của cậu"}<small>{email}</small></span></div>
+                  <Link href="/settings"><Settings size={17} />Cài đặt</Link>
+                  <Link href="/support"><CircleHelp size={17} />Hỗ trợ & góp ý</Link>
+                  <button type="button" onClick={() => void signOut()}><LogOut size={17} />Đăng xuất</button>
+                </div>
+              </details>
             </div>
           </header>
           <main
