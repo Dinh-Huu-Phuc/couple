@@ -4,8 +4,10 @@
   "packageManager": "pnpm@12.8.1",
   "scripts": {
     "dev:web": "corepack pnpm --dir fe dev:web",
+    "dev:landing": "corepack pnpm --dir fe dev:landing",
     "build:web": "corepack pnpm --dir fe build:web",
     "build:admin": "corepack pnpm --dir fe build:admin",
+    "build:landing": "corepack pnpm --dir fe build:landing",
     "dev:admin": "corepack pnpm --dir fe dev:admin",
     "start:web": "corepack pnpm --dir fe start:web",
     "typecheck": "corepack pnpm --dir fe typecheck",

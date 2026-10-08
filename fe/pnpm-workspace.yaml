@@ -1,6 +1,7 @@
 packages:
   - apps/web
   - apps/admin
+  - apps/landing
   - packages/*
 allowBuilds:
   unrs-resolver: true
