@@ -65,6 +65,8 @@ export const contextSchema = z.object({
   deletionPending: z.boolean().optional(),
 });
 export type Context = z.infer<typeof contextSchema>;
+export const letterTemplateSchema = z.enum(["cream", "rose", "classic"]);
+export type LetterTemplate = z.infer<typeof letterTemplateSchema>;
 export const wishSchema = z.object({
   id: uuid,
   couple_id: uuid,
@@ -77,13 +79,17 @@ export const wishSchema = z.object({
   available_from: date.nullable(),
   expires_at: date.nullable(),
   eligible_after: date.nullable(),
+  greeting: z.string().default("Gửi cậu thương,"),
+  closing: z.string().default("Thương,"),
+  signature: z.string().default(""),
+  template_id: letterTemplateSchema.default("cream"),
+  photo_storage_key: z.string().nullable().default(null),
   version: z.number(),
   created_at: date,
   updated_at: date,
 });
 export type Wish = z.infer<typeof wishSchema>;
-export const snapshotSchema = z.object({
-  schemaVersion: z.literal(1),
+const snapshotBaseSchema = z.object({
   title: z.string(),
   description: z.string(),
   category: categorySchema,
@@ -92,6 +98,17 @@ export const snapshotSchema = z.object({
   expiresAt: date.nullable(),
   wishVersion: z.number(),
 });
+export const snapshotSchema = z.discriminatedUnion("schemaVersion", [
+  snapshotBaseSchema.extend({ schemaVersion: z.literal(1) }),
+  snapshotBaseSchema.extend({
+    schemaVersion: z.literal(2),
+    greeting: z.string(),
+    closing: z.string(),
+    signature: z.string(),
+    templateId: letterTemplateSchema,
+    photoStorageKey: z.string().nullable(),
+  }),
+]);
 export const drawSchema = z.object({
   id: uuid,
   couple_id: uuid,
@@ -136,6 +153,19 @@ export const memorySchema = z.object({
   draws: z.object({ snapshot: snapshotSchema, couple_id: uuid }).optional(),
 });
 export type Memory = z.infer<typeof memorySchema>;
+export const chatMessageSchema = z.object({
+  id: uuid,
+  couple_id: uuid,
+  sender_id: uuid,
+  body: z.string(),
+  photo_storage_key: z.string().nullable(),
+  created_at: date,
+});
+export type ChatMessage = z.infer<typeof chatMessageSchema>;
+export const chatMessageInputSchema = z
+  .string()
+  .trim()
+  .max(2000, "Mỗi tin nhắn tối đa 2.000 ký tự.");
 export const requestSchema = z.object({
   id: uuid,
   status: z.enum([
@@ -203,6 +233,11 @@ export const wishInputSchema = z
       .min(1, "Cậu thêm một tiêu đề nhé.")
       .max(120, "Tiêu đề tối đa 120 ký tự."),
     description: z.string().max(2000, "Mô tả tối đa 2.000 ký tự."),
+    greeting: z.string().max(120, "Lời chào tối đa 120 ký tự.").default("Gửi cậu thương,"),
+    closing: z.string().max(120, "Lời kết tối đa 120 ký tự.").default("Thương,"),
+    signature: z.string().max(80, "Chữ ký tối đa 80 ký tự.").default(""),
+    templateId: letterTemplateSchema.default("cream"),
+    photoStorageKey: z.string().nullable().default(null),
     category: categorySchema,
     budgetVnd: z.number().int().min(0).max(1_000_000_000).nullable(),
     availableFrom: z.iso.datetime({ offset: true }).nullable(),

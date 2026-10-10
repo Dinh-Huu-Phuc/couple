@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Heart, LoaderCircle, Mail, X } from "lucide-react";
 import { friendlyError } from "@couple/domain";
 export function Button({
@@ -120,12 +120,15 @@ export function Dialog({
   title,
   children,
   close,
+  className = "",
 }: {
   title: string;
   children: ReactNode;
   close: () => void;
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
     const dialog = ref.current!;
     const active = document.activeElement as HTMLElement | null;
@@ -138,15 +141,15 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className="dialog"
-      aria-labelledby="dialog-title"
+      className={`dialog ${className}`}
+      aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault();
         close();
       }}
     >
       <div className="dialog-heading">
-        <h2 id="dialog-title">{title}</h2>
+        <h2 id={titleId}>{title}</h2>
         <button className="icon-button" aria-label="Đóng" onClick={close}>
           <X size={21} />
         </button>

@@ -1,16 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { eraseAccount } from "./erasure.ts";
+import { deletionOrigins } from "./origins.ts";
 
 // Gateway JWT validation stays enabled. Auth also verifies the live user here.
-const allowedOrigins = new Set([
-  "http://127.0.0.1:3001",
-  "http://localhost:3001",
-  "http://127.0.0.1:3100",
-  ...(Deno.env.get("COUPLE_WEB_ORIGINS") ?? "")
-    .split(",")
-    .map((v) => v.trim())
-    .filter(Boolean),
-]);
+const allowedOrigins = deletionOrigins(Deno.env.get("COUPLE_WEB_ORIGINS"));
 Deno.serve(async (request: Request) => {
   const origin = request.headers.get("Origin");
   if (origin && !allowedOrigins.has(origin))

@@ -26,6 +26,8 @@ test-results/
 !fe/tests/
 fe/tests/*
 !fe/tests/ui-refresh.spec.ts
+!fe/tests/letters-chat.spec.ts
+!be/LETTERS_CHAT.md
 **/fe/test-results/
 
 **/fe/apps/web/assets/

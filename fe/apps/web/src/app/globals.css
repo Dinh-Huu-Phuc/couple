@@ -1440,6 +1440,174 @@ time {
   border-left: 2px solid var(--rose);
   padding-left: 15px;
 }
+
+/* Letter composer and viewer */
+.letter-editor-dialog {
+  width: min(1120px, calc(100% - 28px));
+  max-width: 1120px;
+}
+.letter-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.letter-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.letter-toolbar {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(170px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+.letter-title-field {
+  max-width: 760px;
+}
+.letter-compose,
+.letter-view {
+  display: grid;
+  grid-template-columns: minmax(0, 760px);
+  justify-content: center;
+  gap: 20px;
+  align-items: start;
+}
+.letter-compose.with-photo,
+.letter-view.with-photo {
+  grid-template-columns: minmax(0, 760px) minmax(220px, 310px);
+}
+.letter-paper {
+  min-width: 0;
+  min-height: 440px;
+  padding: 48px;
+  border: 1px solid #ead7cc;
+  border-radius: 3px;
+  color: #974258;
+  box-shadow: 0 13px 35px #5f394113;
+  position: relative;
+  overflow: hidden;
+}
+.letter-paper::before,
+.letter-paper::after {
+  content: "";
+  position: absolute;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.08;
+  pointer-events: none;
+}
+.letter-paper::before { width: 240px; height: 240px; right: -145px; top: -130px; }
+.letter-paper::after { width: 130px; height: 130px; left: -80px; bottom: -70px; }
+.template-cream { background: #fff8f2; }
+.template-rose { background: #fae9e7; color: #8f4056; border-color: #e6c2c1; }
+.template-classic { background: #f5eedf; color: #58473e; border-color: #d8c7aa; }
+.letter-line-input,
+.letter-body-input,
+.letter-greeting,
+.letter-body,
+.letter-closing,
+.letter-signature {
+  font-family: "Couple Serif", Georgia, serif;
+  font-style: italic;
+  color: inherit;
+  letter-spacing: normal;
+}
+.letter-line-input,
+.letter-body-input {
+  border: 0;
+  border-radius: 0;
+  padding: 3px 2px;
+  background: transparent;
+  box-shadow: none;
+}
+.letter-line-input:focus,
+.letter-body-input:focus {
+  outline: 2px solid #b86c7d66;
+  outline-offset: 5px;
+}
+.letter-greeting { font-size: clamp(26px, 3vw, 32px); font-weight: 600; margin-bottom: 28px; }
+.letter-body,
+.letter-body-input { font-size: clamp(22px, 2.3vw, 24px); font-weight: 500; line-height: 1.65; }
+.letter-body { min-height: 220px; }
+.letter-body-input { resize: none; overflow: hidden; min-height: 220px; }
+.letter-closing { font-size: 23px; margin: 28px 0 4px; }
+.letter-signature { font-size: 24px; font-weight: 600; margin: 0; }
+.letter-attachment { min-width: 0; }
+.letter-photo,
+.letter-photo-state,
+.letter-photo-picker {
+  width: 100%;
+  min-height: 300px;
+  aspect-ratio: 4 / 5;
+  border-radius: 8px;
+  border: 1px solid #e0c8c2;
+  overflow: hidden;
+  background: #f6e9e3;
+}
+.letter-photo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.letter-photo-open { padding: 0; display: block; cursor: zoom-in; }
+.letter-photo-dialog { width: min(1000px, calc(100% - 24px)); }
+.letter-photo-dialog > img { width: 100%; height: auto; max-height: 75vh; object-fit: contain; }
+.letter-read-toggle { margin-bottom: 12px; min-height: 44px; }
+.letter-easy-read .letter-paper p { font-family: "Couple Sans", Arial, sans-serif; font-style: normal; line-height: 1.8; }
+.letter-photo-state,
+.letter-photo-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--rose-dark);
+  text-align: center;
+}
+.letter-photo-picker { border-style: dashed; cursor: pointer; font-weight: 400; }
+.letter-photo-picker span { color: var(--muted); font-size: 12px; }
+.letter-photo-picker input,
+.letter-photo-actions input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.letter-photo-state button { border: 0; background: transparent; color: var(--rose-dark); display: flex; gap: 7px; }
+.letter-photo-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; }
+.letter-photo-actions label,
+.letter-photo-actions button { flex-direction: row; align-items: center; font-size: 12px; }
+.letter-details { align-items: start; }
+.letter-details details { padding-top: 19px; }
+.letter-editor-actions { justify-content: flex-end; }
+.letter-paper-read { min-height: 300px; padding: 38px; }
+.letter-view { margin: 20px 0; justify-content: start; }
+.letter-view.with-photo { grid-template-columns: minmax(0, 1fr) minmax(180px, 260px); }
+.letter-view .letter-photo,
+.letter-view .letter-photo-state { min-height: 260px; }
+
+/* Private couple chat */
+.mobile-chat-link { display: none; }
+.chat-page { max-width: 920px; margin: 0 auto; }
+.chat-panel { border: 1px solid var(--line); border-radius: 15px; background: var(--paper); overflow: hidden; }
+.chat-history {
+  min-height: 430px;
+  max-height: min(64vh, 720px);
+  overflow-y: auto;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(180deg, #fffaf6, #f9ede8);
+}
+.chat-load-more { align-self: center; min-height: 40px; }
+.chat-message { max-width: min(72%, 570px); }
+.chat-message.mine { align-self: flex-end; text-align: right; }
+.chat-message.theirs { align-self: flex-start; }
+.chat-message > span { display: block; color: var(--muted); font-size: 10px; margin: 0 8px 3px; }
+.chat-message p { margin: 0; padding: 10px 14px; border-radius: 15px 15px 15px 4px; background: #fffdfa; border: 1px solid #ead9d1; color: var(--ink); text-align: left; }
+.chat-message.mine p { color: #fff; background: var(--rose-dark); border-color: var(--rose-dark); border-radius: 15px 15px 4px 15px; }
+.chat-message time { display: block; margin: 3px 8px 0; font-size: 9px; }
+.chat-composer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: end; padding: 15px 18px 8px; }
+.chat-photo-picker { width: 44px; height: 52px; display: flex; align-items: center; justify-content: center; color: var(--rose-dark); cursor: pointer; position: relative; }
+.chat-photo-picker input { position: absolute; inset: 0; opacity: 0; padding: 0; cursor: pointer; }
+.chat-photo-preview { padding: 12px 18px 0; display: flex; gap: 10px; align-items: center; }
+.chat-photo-preview img { width: 90px; height: 90px; object-fit: contain; }
+.chat-message .letter-photo,.chat-message .letter-photo-state { min-height: 0; width: min(260px,100%); aspect-ratio: auto; }
+.chat-message .letter-photo img { height: auto; max-height: 350px; object-fit: contain; }
+.chat-composer textarea { resize: none; min-height: 52px; max-height: 140px; }
+.chat-composer .button { width: 52px; height: 52px; padding: 0; }
+.chat-status { display: flex; align-items: center; gap: 6px; padding: 0 20px 13px; color: var(--muted); font-size: 10px; }
+.chat-panel > .notice { margin: 0 18px 15px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 @media (min-width: 1500px) {
   .auth-story {
     padding-left: 80px;
@@ -1530,6 +1698,24 @@ time {
   .topbar-actions {
     gap: 4px;
   }
+  .mobile-chat-link { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; color: var(--rose-dark); }
+  .letter-editor-dialog { padding: 20px 14px; width: calc(100% - 16px); }
+  .letter-toolbar { grid-template-columns: 1fr 1fr; }
+  .letter-toolbar .button { grid-column: 1 / -1; }
+  .letter-compose,
+  .letter-compose.with-photo,
+  .letter-view,
+  .letter-view.with-photo { grid-template-columns: minmax(0, 1fr); }
+  .letter-paper,
+  .letter-paper-read { padding: 28px 20px; }
+  .letter-photo,
+  .letter-photo-state,
+  .letter-photo-picker { min-height: 260px; max-height: 520px; }
+  .letter-details { grid-template-columns: 1fr; }
+  .chat-page .page-heading { margin-bottom: 20px; }
+  .chat-history { min-height: 52vh; max-height: 62vh; padding: 16px 12px; }
+  .chat-message { max-width: 86%; }
+  .chat-composer { padding-inline: 12px; }
   .profile-link > span:last-child {
     display: none;
   }
@@ -2077,4 +2263,20 @@ summary:focus-visible { outline-color: var(--focus); }
 }
 .draw-response-form textarea {
   resize: vertical;
+}
+
+/* Keep the paper editor distinct from the themed form controls. */
+.letter-editor .letter-paper input,
+.letter-editor .letter-paper textarea {
+  background: transparent;
+  color: inherit;
+  border: 0;
+  box-shadow: none;
+}
+@media (max-width: 767px) {
+  .chat-history {
+    min-height: 220px;
+    max-height: min(34dvh, 400px);
+    padding: 16px;
+  }
 }

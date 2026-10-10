@@ -65,14 +65,15 @@ using the server-only variables `ADMIN_HOST`, `SUPABASE_URL`, `ADMIN_USERNAME`,
 `ADMIN_PASSWORD`, and `ADMIN_BACKEND_SERVICE_ROLE_KEY`. Admin credentials do not
 belong in the public web project or any `NEXT_PUBLIC_` variable.
 
-The hosted `delete-account` Edge Function allows only named web origins. After
-deploying the web to a new domain, set `COUPLE_WEB_ORIGINS` on the **Supabase**
-project to the exact HTTPS origin (no path or trailing slash). The production
-origins are `https://www.coupleletters.app` and `https://couple-three-pi.vercel.app`.
+The hosted `delete-account` Edge Function allows only named web origins. The
+current `https://app.coupleletters.app` origin and the two original apex/www
+origins are included in code so domain migration cannot silently block account
+deletion. Add other preview origins through `COUPLE_WEB_ORIGINS` on the
+**Supabase** project, using an exact HTTPS origin (no path or trailing slash).
 From `be/`:
 
 ```powershell
-corepack pnpm exec supabase secrets set COUPLE_WEB_ORIGINS=https://www.coupleletters.app,https://couple-three-pi.vercel.app --project-ref ldxekwjpzxsnhhcvvlfi
+corepack pnpm exec supabase secrets set COUPLE_WEB_ORIGINS=https://couple-three-pi.vercel.app --project-ref ldxekwjpzxsnhhcvvlfi
 ```
 
 This setting controls browser CORS for account deletion. The function separately

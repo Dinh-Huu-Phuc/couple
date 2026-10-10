@@ -25,26 +25,27 @@ export async function eraseAccount(port: ErasurePort, userId: string) {
     )
       throw new Error("manifest");
     jobId = job.id;
-    const names: string[] = [];
+    const filesByBucket = new Map<string, string[]>();
     for (const file of job.files) {
       if (
         !file ||
         typeof file !== "object" ||
-        file.bucket !== "couple-memories" ||
+        !["couple-memories", "couple-letter-attachments", "couple-chat-attachments"].includes(file.bucket) ||
         typeof file.name !== "string" ||
         !file.name ||
         file.name.length > 1024
       )
         throw new Error("manifest");
+      const names = filesByBucket.get(file.bucket) ?? [];
       names.push(file.name);
+      filesByBucket.set(file.bucket, names);
     }
     stage = "storage";
-    const unique = [...new Set(names)];
-    for (let offset = 0; offset < unique.length; offset += 100)
-      await port.removeFiles(
-        "couple-memories",
-        unique.slice(offset, offset + 100),
-      );
+    for (const [bucket, names] of filesByBucket) {
+      const unique = [...new Set(names)];
+      for (let offset = 0; offset < unique.length; offset += 100)
+        await port.removeFiles(bucket, unique.slice(offset, offset + 100));
+    }
     stage = "database";
     await port.markFilesRemoved(jobId);
     stage = "auth";

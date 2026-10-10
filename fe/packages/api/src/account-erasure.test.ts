@@ -4,6 +4,7 @@ import {
   type ErasurePort,
 } from "../../../../be/supabase/functions/delete-account/erasure";
 import { deletionRowSchema } from "../../../apps/admin/src/admin/operations-data";
+import { deletionOrigins } from "../../../../be/supabase/functions/delete-account/origins";
 
 const id = "a7100000-0000-4000-8000-000000000001";
 function fixture(
@@ -27,6 +28,40 @@ function fixture(
   return { port, calls };
 }
 describe("account erasure boundaries", () => {
+  it("allows the current app origin without requiring a deployment secret", () => {
+    expect(deletionOrigins().has("https://app.coupleletters.app")).toBe(true);
+    expect(
+      deletionOrigins("https://preview.example.test, ").has(
+        "https://preview.example.test",
+      ),
+    ).toBe(true);
+    expect(
+      deletionOrigins().has("https://app.coupleletters.app.evil.test"),
+    ).toBe(false);
+    expect(deletionOrigins().has("https://evil.test")).toBe(false);
+    expect(deletionOrigins().has("http://app.coupleletters.app")).toBe(false);
+  });
+  it("removes private letter and chat attachments before deleting Auth", async () => {
+    const { port, calls } = fixture([
+      { bucket: "couple-letter-attachments", name: "letter-photo" },
+      { bucket: "couple-chat-attachments", name: "chat-photo" },
+      { bucket: "couple-memories", name: "memory-photo" },
+    ]);
+    expect(await eraseAccount(port, id)).toBe(true);
+    expect(port.removeFiles).toHaveBeenCalledWith("couple-letter-attachments", [
+      "letter-photo",
+    ]);
+    expect(port.removeFiles).toHaveBeenCalledWith("couple-chat-attachments", [
+      "chat-photo",
+    ]);
+    expect(calls).toEqual([
+      "storage",
+      "storage",
+      "storage",
+      "verified",
+      "auth",
+    ]);
+  });
   it("removes bytes and verifies the manifest before deleting Auth", async () => {
     const { port, calls } = fixture();
     expect(await eraseAccount(port, id)).toBe(true);

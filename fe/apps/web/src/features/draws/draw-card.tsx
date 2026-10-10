@@ -14,6 +14,7 @@ import { useApp } from "@/components/app-shell";
 import { Button, Notice } from "@/components/ui";
 import { useAction } from "@/lib/use-action";
 import { MemoryEditor } from "@/features/memories/memory-editor";
+import { LetterView } from "@/features/wishes/letter-view";
 export function DrawCard({ draw }: { draw: Draw }) {
   const { api, userId, context } = useApp();
   const action = useAction();
@@ -31,7 +32,7 @@ export function DrawCard({ draw }: { draw: Draw }) {
       </div>
       <span className="category">{categories[draw.snapshot.category]}</span>
       <h2>{draw.snapshot.title}</h2>
-      <p className="preserve-lines">{draw.snapshot.description}</p>
+      <LetterView snapshot={draw.snapshot} />
       <dl className="draw-meta-grid">
         <div><dt>Ngân sách</dt><dd>{money(draw.snapshot.budgetVnd)}</dd></div>
         <div><dt>Mở lúc</dt><dd><time>{dateLabel(draw.drawn_at, context.profile.timezone)}</time></dd></div>

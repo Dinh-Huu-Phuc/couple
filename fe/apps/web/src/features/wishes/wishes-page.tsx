@@ -19,7 +19,7 @@ import {
 } from "@/components/ui";
 import { useAction } from "@/lib/use-action";
 import { useWishes } from "@/lib/use-list";
-import { WishEditor } from "./wish-editor";
+import { LetterEditor } from "./letter-editor";
 export function WishesPage() {
   const { api, context } = useApp();
   const action = useAction();
@@ -177,7 +177,7 @@ export function WishesPage() {
         </Button>
       )}
       {editor && (
-        <WishEditor
+        <LetterEditor
           wish={editor === "new" ? undefined : editor}
           close={() => setEditor(null)}
         />

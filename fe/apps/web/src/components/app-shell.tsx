@@ -21,6 +21,7 @@ import {
   RefreshCw,
   CircleHelp,
   UserRound,
+  MessageCircle,
 } from "lucide-react";
 import { coupleApi, queryKeys } from "@couple/api";
 import { AppError, initials, safeNext, type Context } from "@couple/domain";
@@ -48,6 +49,11 @@ const navigation = [
   { href: "/wishes", label: "Hộp của tớ", icon: Mail },
   { href: "/history", label: "Đã mở", icon: BookOpen },
   { href: "/memories", label: "Kỷ niệm", icon: ImageIcon },
+];
+const pairedNavigation = [
+  ...navigation.slice(0, 1),
+  { href: "/chat", label: "Trò chuyện", icon: MessageCircle },
+  ...navigation.slice(1),
 ];
 export function AppShell({
   userId,
@@ -166,7 +172,7 @@ export function AppShell({
           coupleId ? "/home" : "/connect",
         ),
       );
-    else if (!coupleId && ["/home", "/history", "/memories"].includes(pathname))
+    else if (!coupleId && ["/home", "/chat", "/history", "/memories"].includes(pathname))
       router.replace("/connect");
   }, [ctx, pathname, coupleId, router]);
   useEffect(() => {
@@ -204,7 +210,7 @@ export function AppShell({
     (ctx.deletionPending && pathname !== "/settings") ||
     !ctx.emailVerified ||
     (!ctx.profile.displayName && pathname !== "/onboarding") ||
-    (!coupleId && ["/home", "/history", "/memories"].includes(pathname))
+    (!coupleId && ["/home", "/chat", "/history", "/memories"].includes(pathname))
   )
     return <Loading />;
   const refresh = async () => {
@@ -228,7 +234,7 @@ export function AppShell({
           </Link>
           <span className="sidebar-caption">THƯ GỬI NGƯỜI THƯƠNG</span>
           <nav aria-label="Điều hướng chính">
-            {navigation.map(({ href, label, icon: Icon }) => (
+            {(coupleId ? pairedNavigation : navigation).map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -301,6 +307,7 @@ export function AppShell({
                 <RefreshCw size={17} />
               </button>
               <ThemeMenu />
+              {coupleId && <Link className="mobile-chat-link" href="/chat" aria-label="Mở trò chuyện"><MessageCircle size={18} /></Link>}
               <details className="profile-menu">
                 <summary className="profile-link" aria-label="Mở menu tài khoản">
                   <span className="avatar">{initials(ctx.profile.displayName)}</span>

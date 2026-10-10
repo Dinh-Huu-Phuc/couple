@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   AppError,
   contextSchema,
+  chatMessageSchema,
   drawSchema,
   feedbackSchema,
   inviteSchema,
@@ -56,6 +57,7 @@ export const queryKeys = {
   draws: (user: string, couple: string) => [user, couple, "draws"] as const,
   memories: (user: string, couple: string) =>
     [user, couple, "memories"] as const,
+  chat: (user: string, couple: string) => [user, couple, "chat"] as const,
   feedback: (user: string) => [user, "feedback"] as const,
 };
 const ok = z.unknown();
@@ -66,6 +68,11 @@ const wishArgs = (p: WishInput) => ({
   p_budget_vnd: p.budgetVnd,
   p_available_from: p.availableFrom,
   p_expires_at: p.expiresAt,
+  p_greeting: p.greeting,
+  p_closing: p.closing,
+  p_signature: p.signature,
+  p_template_id: p.templateId,
+  p_photo_storage_key: p.photoStorageKey,
 });
 export function coupleApi(client: SupabaseClient) {
   return {
@@ -183,6 +190,12 @@ export function coupleApi(client: SupabaseClient) {
         { p_draw_id: drawId, p_message: message, p_photo_storage_key: key },
         memorySchema,
       ),
+    sendChatMessage: (body: string, requestId: string, photoKey: string | null) =>
+      rpc(client, "send_chat_message", { p_body: body, p_request_id: requestId, p_photo_storage_key: photoKey }, chatMessageSchema),
+    saveLetterDraft: (slot: string, payload: Record<string, unknown>) =>
+      rpc(client, "save_letter_draft", { p_slot: slot, p_payload: payload }, z.boolean()),
+    deleteLetterDraft: (slot: string) =>
+      rpc(client, "delete_letter_draft", { p_slot: slot }, z.boolean()),
     end: (coupleId: string, key: string) =>
       rpc(
         client,
@@ -219,7 +232,7 @@ export async function listRows(
   const order = table === "draws" ? "drawn_at" : "created_at";
   const columns: string =
     table === "wishes"
-      ? "id,couple_id,author_id,title,description,category,budget_vnd,status,available_from,expires_at,eligible_after,version,created_at,updated_at"
+      ? "id,couple_id,author_id,title,description,category,budget_vnd,status,available_from,expires_at,eligible_after,greeting,closing,signature,template_id,photo_storage_key,version,created_at,updated_at"
       : table === "draws"
         ? "id,couple_id,wish_id,drawn_by,status,snapshot,drawn_at,completed_at,discussion_message,discussion_at,deferred_until"
         : "id,draw_id,created_by,message,photo_storage_key,created_at,updated_at,draws!inner(snapshot,couple_id)";

@@ -46,6 +46,13 @@ export function SignupPolicyDialog({
               kể cả kỷ niệm do người kết nối tạo. Mong muốn riêng của người còn
               lại được giữ. Tài khoản và nội dung đã xoá không thể tự khôi phục.
             </p>
+            <h3>Trò chuyện trong kết nối</h3>
+            <p>
+              Chat chỉ mở khi hai người đang ghép đôi. Khi ngừng kết nối,
+              toàn bộ tin nhắn bị xoá và quyền truy cập ảnh chat bị thu hồi.
+              File ảnh được dọn qua lịch xử lý của hệ thống. Chat đã xoá
+              không thể khôi phục khi ghép đôi lại.
+            </p>
           </>
         ) : (
           <>
@@ -55,6 +62,12 @@ export function SignupPolicyDialog({
               niệm mà cậu chủ động tạo để cung cấp các tính năng cho hai người.
             </p>
             <h3>Ai có thể xem dữ liệu?</h3>
+            <p>
+              Bản nháp thư chỉ dành cho người viết. Người ấy chỉ đọc thư và
+              ảnh kèm theo sau khi bốc mong muốn. Ảnh thư và ảnh chat nằm
+              trong kho riêng tư trên server; database lưu khóa ảnh để kiểm
+              tra quyền truy cập. Đây không phải chat mã hoá đầu cuối.
+            </p>
             <p>
               Nội dung chung được hiển thị cho người cậu kết nối theo tính năng
               của app. Trang quản trị dùng thông tin tài khoản và trạng thái

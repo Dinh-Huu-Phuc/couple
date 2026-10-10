@@ -1,44 +1,11 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import {
-  AppError,
-  memorySchema,
-  photoSchema,
-  type Draw,
-  type Memory,
-} from "@couple/domain";
+import { AppError, memorySchema, photoSchema, type Draw, type Memory } from "@couple/domain";
 import { useApp } from "@/components/app-shell";
 import { Button, Dialog, Loading, Notice } from "@/components/ui";
 import { useAction } from "@/lib/use-action";
-async function cleanPhoto(file: File): Promise<Blob> {
-  photoSchema.parse(file);
-  let bitmap: ImageBitmap;
-  try {
-    bitmap = await createImageBitmap(file);
-  } catch {
-    throw new AppError("PHOTO_DECODE_ERROR");
-  }
-  const ratio = Math.min(1, 2048 / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(bitmap.width * ratio));
-  canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new AppError("VALIDATION_ERROR");
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  // Re-encode pixel data instead of uploading the original EXIF/GPS metadata.
-  const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob(
-      (result) =>
-        result ? resolve(result) : reject(new AppError("VALIDATION_ERROR")),
-      "image/webp",
-      0.85,
-    ),
-  );
-  photoSchema.parse(blob);
-  return blob;
-}
+import { cleanPhoto } from "@/lib/photo";
 export function MemoryEditor({
   draw,
   close,

@@ -25,8 +25,8 @@ select ok(to_regprocedure('api.create_invite(uuid)') is not null, 'create_invite
 select ok(to_regprocedure('api.preview_invite(text)') is not null, 'preview_invite RPC exists');
 select ok(to_regprocedure('api.request_connection(text,uuid)') is not null, 'request_connection RPC exists');
 select ok(to_regprocedure('api.respond_connection(uuid,text)') is not null, 'respond_connection RPC exists');
-select ok(to_regprocedure('api.create_wish(text,text,text,bigint,timestamp with time zone,timestamp with time zone,uuid)') is not null, 'create_wish RPC exists');
-select ok(to_regprocedure('api.update_wish(uuid,integer,text,text,text,bigint,timestamp with time zone,timestamp with time zone)') is not null, 'update_wish RPC exists');
+select ok(to_regprocedure('api.create_wish(text,text,text,bigint,timestamp with time zone,timestamp with time zone,uuid,text,text,text,text,text)') is not null, 'create_wish RPC exists');
+select ok(to_regprocedure('api.update_wish(uuid,integer,text,text,text,bigint,timestamp with time zone,timestamp with time zone,text,text,text,text,text)') is not null, 'update_wish RPC exists');
 select ok(to_regprocedure('api.draw_wish(uuid,text,bigint)') is not null, 'draw_wish RPC exists');
 select ok(to_regprocedure('api.respond_draw(uuid,text)') is not null, 'respond_draw RPC exists');
 select ok(to_regprocedure('api.complete_draw(uuid)') is not null, 'complete_draw RPC exists');
