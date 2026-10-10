@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { appName } from "@couple/theme";
 import { Providers } from "@/components/providers";
+import { SelfXssWarning } from "@/components/self-xss-warning";
 import "./globals.css";
 export const metadata: Metadata = {
   title: {
@@ -26,6 +27,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <SelfXssWarning />
         <Providers>{children}</Providers>
       </body>
     </html>

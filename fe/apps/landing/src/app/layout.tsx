@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SelfXssWarning } from "../components/self-xss-warning";
 import "./fonts.css";
 import "./globals.css";
 
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body><SelfXssWarning />{children}</body>
     </html>
   );
 }
