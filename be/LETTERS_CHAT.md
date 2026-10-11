@@ -26,3 +26,13 @@ Before deploying the frontend, apply both ordered migrations:
 Then deploy the updated `be/supabase/functions/delete-account` Edge Function and both web/admin applications. Verify the admin Production `CRON_SECRET` matches the scheduled request authentication and that the existing cron runs successfully. Without that cron, chat rows/access are still removed, but orphaned photo bytes will not be physically collected. Never reset the linked production database.
 
 For a rollout smoke test, use two test accounts: save/reopen a private draft with a photo, send and draw it, send chat text/photos in both directions, retry a send, then end the pairing and verify chat/photo access disappears. Check cleanup separately before relying on physical deletion.
+
+## Letter activity and chat receipts
+
+Apply `20261010000300_letter_activity_chat_receipts.sql`, `20261010000400_unread_letter_activity.sql`, and `20261010000500_chat_send_pair_guard.sql` before deploying this frontend update. They add recipient-owned unread letter activity, recipient-only chat acknowledgement RPCs, and a guard that prevents queued sends from following a user into another pairing. Old letters do not generate opening notifications on rollout; subsequent new replies do. Seeing version N leaves any later version unread. Unpairing removes activity and chat receipts with the messages.
+
+Sent means the message is committed. Delivered means a signed-in recipient device has fetched the message metadata, including when viewing another app page; it is not an operating-system push receipt. Read means the chat is focused and visible and the message intersects the visible chat area. Both times preserve the first acknowledgement across devices. A photo receipt acknowledges its message, not successful downloading of every image byte.
+
+Chat shows pending sends immediately and uses server request IDs to reconcile optimistic rows, RPC responses and Realtime events. Text sends are queued; photo preparation begins on selection and uploads do not block text sends. Failed sends retain their content for retry while the chat remains mounted. Pending sends are not persisted across closing/reloading the page. Realtime reconnection and periodic fetching recover missed messages; delivery latency still depends on the network.
+
+The browser test additionally holds send requests for 1.5 seconds to verify immediate local display and continued composing, tests delivered-before-read, forces one send failure, and checks retry reconciliation. Database coverage is in `be/supabase/tests/014_letter_activity_receipts.sql`.

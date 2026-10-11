@@ -776,7 +776,8 @@ time {
 .bottom-tabs a {
   position: relative;
 }
-.pending-wish-badge.bottom {
+.pending-wish-badge.bottom,
+.bottom-tabs .pending-wish-badge {
   position: absolute;
   top: -4px;
   left: calc(50% + 8px);
@@ -2266,6 +2267,24 @@ summary:focus-visible { outline-color: var(--focus); }
 }
 
 /* Keep the paper editor distinct from the themed form controls. */
+.chat-receipt {
+  font-size: 11px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.chat-receipt summary {
+  cursor: pointer;
+  padding-block: 6px;
+}
+.chat-receipt > span {
+  display: block;
+  margin-block: 4px;
+}
+.chat-message > img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
 .letter-editor .letter-paper input,
 .letter-editor .letter-paper textarea {
   background: transparent;

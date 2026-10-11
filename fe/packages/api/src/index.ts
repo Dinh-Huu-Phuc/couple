@@ -4,6 +4,7 @@ import {
   AppError,
   contextSchema,
   chatMessageSchema,
+  letterActivitySchema,
   drawSchema,
   feedbackSchema,
   inviteSchema,
@@ -190,10 +191,46 @@ export function coupleApi(client: SupabaseClient) {
         { p_draw_id: drawId, p_message: message, p_photo_storage_key: key },
         memorySchema,
       ),
-    sendChatMessage: (body: string, requestId: string, photoKey: string | null) =>
-      rpc(client, "send_chat_message", { p_body: body, p_request_id: requestId, p_photo_storage_key: photoKey }, chatMessageSchema),
+    sendChatMessage: (
+      body: string,
+      requestId: string,
+      photoKey: string | null,
+      coupleId: string,
+    ) =>
+      rpc(
+        client,
+        "send_chat_message_to_couple",
+        {
+          p_body: body,
+          p_couple_id: coupleId,
+          p_request_id: requestId,
+          p_photo_storage_key: photoKey,
+        },
+        chatMessageSchema,
+      ),
+    letterActivity: () =>
+      rpc(client, "list_letter_activity", {}, z.array(letterActivitySchema)),
+    ackChatMessages: (ids: string[], read = false) =>
+      rpc(
+        client,
+        "ack_chat_messages",
+        { p_ids: ids, p_read: read },
+        z.boolean(),
+      ),
+    seeLetterActivity: (drawId: string, version: number) =>
+      rpc(
+        client,
+        "see_letter_activity",
+        { p_draw_id: drawId, p_version: version },
+        z.boolean(),
+      ),
     saveLetterDraft: (slot: string, payload: Record<string, unknown>) =>
-      rpc(client, "save_letter_draft", { p_slot: slot, p_payload: payload }, z.boolean()),
+      rpc(
+        client,
+        "save_letter_draft",
+        { p_slot: slot, p_payload: payload },
+        z.boolean(),
+      ),
     deleteLetterDraft: (slot: string) =>
       rpc(client, "delete_letter_draft", { p_slot: slot }, z.boolean()),
     end: (coupleId: string, key: string) =>

@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@couple/api";
 import { Check, Heart, MessageCircle, Clock, ImagePlus } from "lucide-react";
 import {
   categories,
@@ -16,7 +18,36 @@ import { useAction } from "@/lib/use-action";
 import { MemoryEditor } from "@/features/memories/memory-editor";
 import { LetterView } from "@/features/wishes/letter-view";
 export function DrawCard({ draw }: { draw: Draw }) {
-  const { api, userId, context } = useApp();
+  const { api, userId, context, letterActivity } = useApp();
+  const cache = useQueryClient();
+  const activity = letterActivity.find((row) => row.draw_id === draw.id);
+  const unread = !!activity && activity.version > activity.seen_version;
+  const [viewedVersion, setViewedVersion] = useState(0);
+  const [seenError, setSeenError] = useState<unknown>();
+  const reveal = !unread || viewedVersion >= (activity?.version ?? 0);
+  async function viewActivity() {
+    if (!activity) return;
+    if (
+      activity.kind === "reply" &&
+      (!draw.discussion_at ||
+        !activity.discussion_at ||
+        new Date(draw.discussion_at).getTime() !==
+          new Date(activity.discussion_at).getTime())
+    ) {
+      await cache.invalidateQueries({
+        queryKey: queryKeys.draws(userId, draw.couple_id),
+      });
+      return;
+    }
+    setViewedVersion(activity.version);
+    setSeenError(undefined);
+    try {
+      await api.seeLetterActivity(draw.id, activity.version);
+      await cache.invalidateQueries({ queryKey: [userId, "letter-activity"] });
+    } catch (error) {
+      setSeenError(error);
+    }
+  }
   const action = useAction();
   const [memory, setMemory] = useState(false);
   const [response, setResponse] = useState<"discuss" | "deferred" | null>(null);
@@ -32,13 +63,50 @@ export function DrawCard({ draw }: { draw: Draw }) {
       </div>
       <span className="category">{categories[draw.snapshot.category]}</span>
       <h2>{draw.snapshot.title}</h2>
+      {!mine && (
+        <p className="field-note">
+          💌 Người ấy đã mở ·{" "}
+          {dateLabel(draw.drawn_at, context.profile.timezone)}
+        </p>
+      )}
+      {unread && (
+        <div className="button-row">
+          <span className="badge">
+            {activity.kind === "reply" ? "Phản hồi mới" : "Người ấy vừa mở thư"}
+          </span>
+          <Button
+            className="button-secondary"
+            onClick={() => void viewActivity()}
+          >
+            {activity.kind === "reply" ? "Xem phản hồi" : "Xem thư"}
+          </Button>
+        </div>
+      )}
+      <Notice error={seenError} retry={() => void viewActivity()} />
       <LetterView snapshot={draw.snapshot} />
       <dl className="draw-meta-grid">
-        <div><dt>Ngân sách</dt><dd>{money(draw.snapshot.budgetVnd)}</dd></div>
-        <div><dt>Mở lúc</dt><dd><time>{dateLabel(draw.drawn_at, context.profile.timezone)}</time></dd></div>
-        {draw.completed_at && <div><dt>Hoàn thành</dt><dd><time>{dateLabel(draw.completed_at, context.profile.timezone)}</time></dd></div>}
+        <div>
+          <dt>Ngân sách</dt>
+          <dd>{money(draw.snapshot.budgetVnd)}</dd>
+        </div>
+        <div>
+          <dt>Mở lúc</dt>
+          <dd>
+            <time>{dateLabel(draw.drawn_at, context.profile.timezone)}</time>
+          </dd>
+        </div>
+        {draw.completed_at && (
+          <div>
+            <dt>Hoàn thành</dt>
+            <dd>
+              <time>
+                {dateLabel(draw.completed_at, context.profile.timezone)}
+              </time>
+            </dd>
+          </div>
+        )}
       </dl>
-      {draw.discussion_message && (
+      {draw.discussion_message && reveal && (
         <blockquote className="draw-reply">
           <header>
             <MessageCircle size={16} aria-hidden="true" />
@@ -111,15 +179,22 @@ export function DrawCard({ draw }: { draw: Draw }) {
           {draw.status === "accepted" && (
             <Button
               busy={action.busy}
-              onClick={() => void action.run(
-                () => api.complete(draw.id),
-                async () => {
-                  setCelebrating(true);
-                  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-                    await new Promise((resolve) => window.setTimeout(resolve, 700));
-                  setCelebrating(false);
-                },
-              )}
+              onClick={() =>
+                void action.run(
+                  () => api.complete(draw.id),
+                  async () => {
+                    setCelebrating(true);
+                    if (
+                      !window.matchMedia("(prefers-reduced-motion: reduce)")
+                        .matches
+                    )
+                      await new Promise((resolve) =>
+                        window.setTimeout(resolve, 700),
+                      );
+                    setCelebrating(false);
+                  },
+                )
+              }
             >
               <Check size={16} />
               Đã hoàn thành
@@ -152,7 +227,13 @@ export function DrawCard({ draw }: { draw: Draw }) {
         />
       )}
       {memory && <MemoryEditor draw={draw} close={() => setMemory(false)} />}
-      {celebrating && <div className="completion-hearts" aria-hidden="true"><Heart /><Heart /><Heart /></div>}
+      {celebrating && (
+        <div className="completion-hearts" aria-hidden="true">
+          <Heart />
+          <Heart />
+          <Heart />
+        </div>
+      )}
     </article>
   );
 }

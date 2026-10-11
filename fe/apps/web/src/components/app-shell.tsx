@@ -24,7 +24,13 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { coupleApi, queryKeys } from "@couple/api";
-import { AppError, initials, safeNext, type Context } from "@couple/domain";
+import {
+  type LetterActivity,
+  AppError,
+  initials,
+  safeNext,
+  type Context,
+} from "@couple/domain";
 import { browserClient } from "@/lib/supabase/client";
 import { Loading, Notice } from "./ui";
 import { appName } from "@couple/theme";
@@ -36,6 +42,7 @@ type AppValue = {
   userId: string;
   email: string;
   pendingWishCount: number;
+  letterActivity: LetterActivity[];
   refresh: () => Promise<void>;
 };
 const AppContext = createContext<AppValue | null>(null);
@@ -123,6 +130,93 @@ export function AppShell({
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
   });
+  const activities = useQuery({
+    queryKey: [userId, "letter-activity", coupleId ?? null],
+    enabled: !!coupleId && !!ctx?.emailVerified && !ctx?.deletionPending,
+    queryFn: () => coupleApi(client()).letterActivity(),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
+  const activityCount = (activities.data ?? []).filter(
+    (row) => row.version > row.seen_version,
+  ).length;
+  useEffect(() => {
+    if (!coupleId) return;
+    let stopped = false;
+    const receive = async () => {
+      const { data, error } = await client()
+        .from("chat_messages")
+        .select("id")
+        .eq("couple_id", coupleId)
+        .neq("sender_id", userId)
+        .is("delivered_at", null)
+        .limit(100);
+      if (!stopped && !error && data?.length)
+        await coupleApi(client()).ackChatMessages(data.map((row) => row.id));
+    };
+    const safeReceive = () => {
+      void receive().catch(() => undefined);
+    };
+    safeReceive();
+    const interval = window.setInterval(safeReceive, 30_000);
+    const channel = client()
+      .channel(`delivery:${userId}:${coupleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+          filter: `couple_id=eq.${coupleId}`,
+        },
+        safeReceive,
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") safeReceive();
+      });
+    window.addEventListener("online", safeReceive);
+    return () => {
+      stopped = true;
+      window.clearInterval(interval);
+      window.removeEventListener("online", safeReceive);
+      void client().removeChannel(channel);
+    };
+  }, [userId, coupleId]);
+  useEffect(() => {
+    if (!coupleId) return;
+    const channel = client()
+      .channel(`letters:${userId}:${coupleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "letter_activity",
+          filter: `recipient_id=eq.${userId}`,
+        },
+        () => {
+          void cache.invalidateQueries({
+            queryKey: [userId, "letter-activity"],
+          });
+          void cache.invalidateQueries({
+            queryKey: queryKeys.draws(userId, coupleId),
+          });
+        },
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          void cache.invalidateQueries({
+            queryKey: [userId, "letter-activity"],
+          });
+          void cache.invalidateQueries({
+            queryKey: queryKeys.draws(userId, coupleId),
+          });
+        }
+      });
+    return () => {
+      void client().removeChannel(channel);
+    };
+  }, [userId, coupleId, cache]);
   const pendingBadge = pendingWishes.data
     ? pendingWishes.data > 99
       ? "99+"
@@ -172,7 +266,10 @@ export function AppShell({
           coupleId ? "/home" : "/connect",
         ),
       );
-    else if (!coupleId && ["/home", "/chat", "/history", "/memories"].includes(pathname))
+    else if (
+      !coupleId &&
+      ["/home", "/chat", "/history", "/memories"].includes(pathname)
+    )
       router.replace("/connect");
   }, [ctx, pathname, coupleId, router]);
   useEffect(() => {
@@ -210,7 +307,8 @@ export function AppShell({
     (ctx.deletionPending && pathname !== "/settings") ||
     !ctx.emailVerified ||
     (!ctx.profile.displayName && pathname !== "/onboarding") ||
-    (!coupleId && ["/home", "/chat", "/history", "/memories"].includes(pathname))
+    (!coupleId &&
+      ["/home", "/chat", "/history", "/memories"].includes(pathname))
   )
     return <Loading />;
   const refresh = async () => {
@@ -223,6 +321,7 @@ export function AppShell({
         userId,
         email,
         pendingWishCount: pendingWishes.data ?? 0,
+        letterActivity: activities.data ?? [],
         refresh,
       }}
     >
@@ -234,35 +333,45 @@ export function AppShell({
           </Link>
           <span className="sidebar-caption">THƯ GỬI NGƯỜI THƯƠNG</span>
           <nav aria-label="Điều hướng chính">
-            {(coupleId ? pairedNavigation : navigation).map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                aria-current={
-                  pathname === href ||
-                  (href === "/home" && pathname === "/connect")
-                    ? "page"
-                    : undefined
-                }
-                className={
-                  pathname === href ||
-                  (href === "/home" && pathname === "/connect")
-                    ? "active"
-                    : ""
-                }
-              >
-                <Icon size={20} />
-                <span>{label}</span>
-                {href === "/home" && pendingBadge && (
-                  <span
-                    className="pending-wish-badge"
-                    aria-label={`${pendingWishes.data} mong muốn mới`}
-                  >
-                    {pendingBadge}
-                  </span>
-                )}
-              </Link>
-            ))}
+            {(coupleId ? pairedNavigation : navigation).map(
+              ({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={
+                    pathname === href ||
+                    (href === "/home" && pathname === "/connect")
+                      ? "page"
+                      : undefined
+                  }
+                  className={
+                    pathname === href ||
+                    (href === "/home" && pathname === "/connect")
+                      ? "active"
+                      : ""
+                  }
+                >
+                  <Icon size={20} />
+                  <span>{label}</span>
+                  {href === "/history" && activityCount > 0 && (
+                    <span
+                      className="pending-wish-badge"
+                      aria-label={`${activityCount} thư có cập nhật mới`}
+                    >
+                      {activityCount > 99 ? "99+" : activityCount}
+                    </span>
+                  )}
+                  {href === "/home" && pendingBadge && (
+                    <span
+                      className="pending-wish-badge"
+                      aria-label={`${pendingWishes.data} mong muốn mới`}
+                    >
+                      {pendingBadge}
+                    </span>
+                  )}
+                </Link>
+              ),
+            )}
           </nav>
           <div className="sidebar-bottom">
             <div className="sidebar-note">
@@ -307,17 +416,45 @@ export function AppShell({
                 <RefreshCw size={17} />
               </button>
               <ThemeMenu />
-              {coupleId && <Link className="mobile-chat-link" href="/chat" aria-label="Mở trò chuyện"><MessageCircle size={18} /></Link>}
+              {coupleId && (
+                <Link
+                  className="mobile-chat-link"
+                  href="/chat"
+                  aria-label="Mở trò chuyện"
+                >
+                  <MessageCircle size={18} />
+                </Link>
+              )}
               <details className="profile-menu">
-                <summary className="profile-link" aria-label="Mở menu tài khoản">
-                  <span className="avatar">{initials(ctx.profile.displayName)}</span>
+                <summary
+                  className="profile-link"
+                  aria-label="Mở menu tài khoản"
+                >
+                  <span className="avatar">
+                    {initials(ctx.profile.displayName)}
+                  </span>
                   <span>Xin chào, {ctx.profile.displayName || "cậu"}</span>
                 </summary>
                 <div className="popover-menu account-menu">
-                  <div className="account-menu-name"><UserRound size={17} /><span>{ctx.profile.displayName || "Tài khoản của cậu"}<small>{email}</small></span></div>
-                  <Link href="/settings"><Settings size={17} />Cài đặt</Link>
-                  <Link href="/support"><CircleHelp size={17} />Hỗ trợ & góp ý</Link>
-                  <button type="button" onClick={() => void signOut()}><LogOut size={17} />Đăng xuất</button>
+                  <div className="account-menu-name">
+                    <UserRound size={17} />
+                    <span>
+                      {ctx.profile.displayName || "Tài khoản của cậu"}
+                      <small>{email}</small>
+                    </span>
+                  </div>
+                  <Link href="/settings">
+                    <Settings size={17} />
+                    Cài đặt
+                  </Link>
+                  <Link href="/support">
+                    <CircleHelp size={17} />
+                    Hỗ trợ & góp ý
+                  </Link>
+                  <button type="button" onClick={() => void signOut()}>
+                    <LogOut size={17} />
+                    Đăng xuất
+                  </button>
                 </div>
               </details>
             </div>
@@ -357,6 +494,14 @@ export function AppShell({
             >
               <Icon size={20} />
               <span>{label}</span>
+              {href === "/history" && activityCount > 0 && (
+                <span
+                  className="pending-wish-badge"
+                  aria-label={`${activityCount} thư có cập nhật mới`}
+                >
+                  {activityCount > 99 ? "99+" : activityCount}
+                </span>
+              )}
               {href === "/home" && pendingBadge && (
                 <span
                   className="pending-wish-badge bottom"

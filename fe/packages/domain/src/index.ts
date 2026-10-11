@@ -153,10 +153,24 @@ export const memorySchema = z.object({
   draws: z.object({ snapshot: snapshotSchema, couple_id: uuid }).optional(),
 });
 export type Memory = z.infer<typeof memorySchema>;
+export const letterActivitySchema = z.object({
+  draw_id: uuid,
+  couple_id: uuid,
+  recipient_id: uuid,
+  kind: z.enum(["opened", "reply"]),
+  version: z.number().int(),
+  seen_version: z.number().int(),
+  updated_at: date,
+  discussion_at: date.nullable(),
+});
+export type LetterActivity = z.infer<typeof letterActivitySchema>;
 export const chatMessageSchema = z.object({
   id: uuid,
   couple_id: uuid,
   sender_id: uuid,
+  request_id: uuid.optional(),
+  delivered_at: date.nullable().optional(),
+  read_at: date.nullable().optional(),
   body: z.string(),
   photo_storage_key: z.string().nullable(),
   created_at: date,
@@ -233,8 +247,14 @@ export const wishInputSchema = z
       .min(1, "Cậu thêm một tiêu đề nhé.")
       .max(120, "Tiêu đề tối đa 120 ký tự."),
     description: z.string().max(2000, "Mô tả tối đa 2.000 ký tự."),
-    greeting: z.string().max(120, "Lời chào tối đa 120 ký tự.").default("Gửi cậu thương,"),
-    closing: z.string().max(120, "Lời kết tối đa 120 ký tự.").default("Thương,"),
+    greeting: z
+      .string()
+      .max(120, "Lời chào tối đa 120 ký tự.")
+      .default("Gửi cậu thương,"),
+    closing: z
+      .string()
+      .max(120, "Lời kết tối đa 120 ký tự.")
+      .default("Thương,"),
     signature: z.string().max(80, "Chữ ký tối đa 80 ký tự.").default(""),
     templateId: letterTemplateSchema.default("cream"),
     photoStorageKey: z.string().nullable().default(null),
@@ -317,8 +337,10 @@ export const errorMessages: Record<string, string> = {
   ADMIN_SESSION_EXPIRED:
     "Phiên quản trị đã hết hạn. Cậu đăng nhập admin lại nhé.",
   ADMIN_UNAVAILABLE: "Chưa kết nối được khu vực quản trị. Cậu thử lại nhé.",
-  ADMIN_BAN_AUTH_PENDING: "Đã chặn truy cập dữ liệu, nhưng Supabase Auth chưa xác nhận ban đăng nhập. Cậu thử ban lại và kiểm tra nhật ký nhé.",
-  MODERATION_ERASURE_PENDING: "Yêu cầu xoá đã bắt đầu nhưng chưa hoàn tất. Cậu kiểm tra yêu cầu xoá trong trang quản trị rồi thử lại nhé.",
+  ADMIN_BAN_AUTH_PENDING:
+    "Đã chặn truy cập dữ liệu, nhưng Supabase Auth chưa xác nhận ban đăng nhập. Cậu thử ban lại và kiểm tra nhật ký nhé.",
+  MODERATION_ERASURE_PENDING:
+    "Yêu cầu xoá đã bắt đầu nhưng chưa hoàn tất. Cậu kiểm tra yêu cầu xoá trong trang quản trị rồi thử lại nhé.",
   INACTIVITY_POLICY_CHANGED:
     "Mốc ngày đã thay đổi hoặc chưa hợp lệ. Cậu kiểm tra và lưu lại nhé.",
   INACTIVITY_ERASURE_PENDING:

@@ -147,6 +147,31 @@ test("letter draft and private photos survive reload; paired chat sends photos a
       pb.getByRole("heading", { name: "Bức ảnh của hai mình" }),
     ).toBeVisible();
     await pb.getByRole("button", { name: "Đóng", exact: true }).click();
+    await pa.goto("/history");
+    await expect(
+      pa.getByText("Người ấy vừa mở thư", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      pa.locator(".field-note", { hasText: "Người ấy đã mở" }),
+    ).toBeVisible();
+    await pa.getByRole("button", { name: "Xem thư", exact: true }).click();
+    await expect(
+      pa.getByText("Người ấy vừa mở thư", { exact: true }),
+    ).toHaveCount(0);
+    await pb.getByRole("button", { name: "Cùng bàn nhé", exact: true }).click();
+    await pb
+      .getByLabel("Lời nhắn gửi người ấy")
+      .fill("Mình đi vào chiều mai nhé");
+    await pb.getByRole("button", { name: "Gửi lời nhắn", exact: true }).click();
+    await expect(pa.getByText("Phản hồi mới", { exact: true })).toBeVisible();
+    await expect(
+      pa.getByText("Mình đi vào chiều mai nhé", { exact: true }),
+    ).toHaveCount(0);
+    await pa.getByRole("button", { name: "Xem phản hồi", exact: true }).click();
+    await expect(
+      pa.getByText("Mình đi vào chiều mai nhé", { exact: true }),
+    ).toBeVisible();
+    await expect(pa.getByText("Phản hồi mới", { exact: true })).toHaveCount(0);
     await pa.goto("/chat");
     await pb.goto("/chat");
     await pa
@@ -158,6 +183,62 @@ test("letter draft and private photos survive reload; paired chat sends photos a
       pb.getByText("Một lời nhỏ gửi cậu", { exact: true }),
     ).toBeVisible();
     await expect(pb.getByAltText("Ảnh gửi trong trò chuyện")).toBeVisible();
+    await pb.goto("/history");
+    await pa.route("**/rest/v1/rpc/send_chat_message_to_couple", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
+    await pa.getByLabel("Tin nhắn", { exact: true }).fill("Tin nhanh thứ nhất");
+    await pa.getByRole("button", { name: "Gửi tin nhắn", exact: true }).click();
+    await expect(
+      pa.getByText("Tin nhanh thứ nhất", { exact: true }),
+    ).toBeVisible({ timeout: 800 });
+    await expect(pa.getByLabel("Tin nhắn", { exact: true })).toHaveValue("");
+    await pa.getByLabel("Tin nhắn", { exact: true }).fill("Tin nhanh thứ hai");
+    await pa.getByRole("button", { name: "Gửi tin nhắn", exact: true }).click();
+    await expect(
+      pa.getByText("Tin nhanh thứ hai", { exact: true }),
+    ).toBeVisible({ timeout: 800 });
+    await expect(
+      pa
+        .locator(".chat-message", { hasText: "Tin nhanh thứ hai" })
+        .getByText("Đã nhận", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      pa
+        .locator(".chat-message", { hasText: "Tin nhanh thứ hai" })
+        .getByText(/Đã đọc/),
+    ).toHaveCount(0);
+    await pb.goto("/chat");
+    await pb.bringToFront();
+    await expect(
+      pb.getByText("Tin nhanh thứ hai", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      pa
+        .locator(".chat-message", { hasText: "Tin nhanh thứ hai" })
+        .getByText(/Đã đọc/),
+    ).toBeVisible();
+    await pa.unroute("**/rest/v1/rpc/send_chat_message_to_couple");
+    let failOnce = true;
+    await pa.route("**/rest/v1/rpc/send_chat_message_to_couple", async (route) => {
+      if (failOnce) {
+        failOnce = false;
+        await route.abort();
+      } else await route.continue();
+    });
+    await pa
+      .getByLabel("Tin nhắn", { exact: true })
+      .fill("Thử lại không trùng tin");
+    await pa.getByRole("button", { name: "Gửi tin nhắn", exact: true }).click();
+    await pa.getByRole("button", { name: "Gửi thất bại · Thử lại" }).click();
+    await expect(
+      pb.getByText("Thử lại không trùng tin", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      pa.getByText("Thử lại không trùng tin", { exact: true }),
+    ).toHaveCount(1);
+    await pa.unroute("**/rest/v1/rpc/send_chat_message_to_couple");
     await pb.getByLabel("Tin nhắn", { exact: true }).fill("Tớ nhận được rồi");
     await pb.getByRole("button", { name: "Gửi tin nhắn", exact: true }).click();
     await expect(
